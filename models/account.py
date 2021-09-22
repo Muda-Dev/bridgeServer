@@ -48,7 +48,7 @@ class Account:
             if len(service_info) == 0:
                 return Md.make_response(404, "service not found")
 
-            merchant_celo_address = service_info[0]['merchant_celo_address']
+            merchant_celo_address = service_info['merchant_celo_address']
             if recipient != merchant_celo_address:
                 return Md.make_response(404, "sent recipient address does not match receiver address")
 
@@ -122,7 +122,7 @@ class Account:
         except Exception as e:
             print(e)
 
-    def make_transfer_working(self, rq):
+    def celo_contract_transfer(self, rq):
         try:
             data = rq.json
             print("transaction request received")
