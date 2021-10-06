@@ -26,8 +26,12 @@ class Account:
 
     def generate_keypair(self):
         account = self.kit.w3.eth.account.create()
-        print(account)
-        return account
+        decoded_hash = account.key.hex()
+        response = {
+            "address": account.address,
+            "privateKey": decoded_hash
+        }
+        return response
 
     def make_transfer(self, rq):
         try:
@@ -61,27 +65,30 @@ class Account:
             gas_price_contract = self.kit.base_wrapper.create_and_get_contract_by_name('GasPriceMinimum')
             gas_price_minimum = gas_price_contract.get_gas_price_minimum(sending_contract_token.address)
             gas_price = int(gas_price_minimum * 3)
-            FROM_ADDR = "0xF968575Dc8872D3957E3b91BFAE0d92D4c9c1Dd5"
+
+            sender_account = self.kit.w3.eth.account.privateKeyToAccount(secret_key)
+
+            sender_address = sender_account.address
+            print(sender_address)
 
             transaction = unicorns.functions.transfer(
                 recipient,
                 amount_to_send
             ).buildTransaction({
                 'gas': 70000,
-                'nonce': self.kit.w3.eth.getTransactionCount(FROM_ADDR),
+                'nonce': self.kit.w3.eth.getTransactionCount(sender_address),
                 'gasPrice': gas_price,
                 'chainId': 44787
             })
             signed_tx = self.kit.w3.eth.account.signTransaction(transaction, secret_key)
-            print(signed_tx)
             tx_hash = self.kit.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
             decoded_hash = tx_hash.hex()
 
             send_data = {
-                "account_id": FROM_ADDR,
+                "account_id": sender_address,
                 "amount": amount,
                 "currency": "UGX",
-                "sent_from": FROM_ADDR,
+                "sent_from": sender_address,
                 "sent_to": recipient,
                 "service_id": service_id,
                 "recipient_account_number": account_number,
