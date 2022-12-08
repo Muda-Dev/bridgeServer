@@ -1,11 +1,14 @@
 from audioop import add
 from email import message
 import imp
+from locale import currency
+from unicodedata import decimal
 from flask import jsonify
 from helpers.dbhelper import Database as Db
 from helpers.modal import Modal as Md
 from application import web3
 import requests
+from config import config as cfg
 import json
 import os
 
@@ -13,10 +16,6 @@ import os
 class Account:
     def __init__(self):
         self.wallet = ""
-        self.precision = os.getenv("decimals")
-        self.abi = Md().get_abi()
-        self.contract_address = os.getenv("contract_address")
-        self.token_code = os.getenv("coin")
 
     def to_wei(self, amount):
         return amount * self.precision
@@ -46,7 +45,14 @@ class Account:
             sending_token = data['sending_token']
             service_id = extra_data['service_id']
             account_number = extra_data['account_number']
-            account_1 = os.getenv("address")
+            currency = os.getenv("currency")
+            contract = Md().get_contract(currency)
+            
+            abi = contract[0]
+            contract = contract[1]
+            contract_address = contract['contract_address']
+            decimals = contract['decimals']
+            
             service_info = get_service(service_id)
             print(service_info)
 
@@ -61,11 +67,10 @@ class Account:
             if recipient != merchant_celo_address:
                 return Md.make_response(404, "sent recipient address does not match receiver address")
 
-            amount_to_send = amount * 100
-            print(self.contract_address)
+            amount_to_send = int(amount) * int(decimals)
+            print(amount_to_send)
 
-            unicorns = web3.eth.contract(
-                address=self.contract_address, abi=self.abi)
+            unicorns = web3.eth.contract(address=contract_address, abi=abi)
             print(unicorns.address)
 
             sender_account = web3.eth.account.privateKeyToAccount(secret_key)
@@ -74,16 +79,16 @@ class Account:
             #sender_address = address
             print(sender_address)
 
-            gasPrice = web3.toWei(os.getenv("gasPrice"), 'gwei')
+            gasPrice = web3.toWei(cfg["gasPrice"], 'gwei')
 
             transaction = unicorns.functions.transfer(
                 recipient,
                 amount_to_send
             ).buildTransaction({
-                'gas': int(os.getenv("gas")),
+                'gas': int(cfg["gas"]),
                 'nonce': web3.eth.getTransactionCount(sender_address),
                 'gasPrice': gasPrice,
-                'chainId': int(os.getenv("chain_id"))
+                'chainId': int(cfg["chain_id"])
             })
             print(transaction)
             signed_tx = web3.eth.account.signTransaction(
@@ -94,7 +99,7 @@ class Account:
             message = {"txHash": decoded_hash,
                        "currency": os.getenv("coin"),
                        "amount": amount,
-                       "contract_address": os.getenv("contract_address")
+                       "contract_address": contract_address
                        }
             return Md.make_response(100, message)
 
@@ -124,7 +129,7 @@ class Account:
             bl = {
                 "balance": web3.fromWei(balance, 'gwei'),
                 "asset": os.getenv("coin"),
-                "contract_address": os.getenv("contract_address")
+                "contract_address": os.getenv("cugx_contract_address")
             }
 
             return jsonify(bl), 200

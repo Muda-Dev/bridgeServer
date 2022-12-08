@@ -1,10 +1,12 @@
 import json
+from unicodedata import decimal
 import jwt
 from flask import jsonify, request
 from cryptography.fernet import Fernet
 import os
 import urllib3
 import requests
+from config import config as cfg
 
 
 class Modal:
@@ -36,11 +38,18 @@ class Modal:
             code = 403
         return jsonify(rsp), code
 
-    def get_abi(self):
+    def get_contract(self,coin):
         try:
-            with open('abi.json') as f:
-                data = json.load(f)
-                return data
+            contract=""
+            if coin == "ugx":
+                contract = cfg['cugx_contract']
+            elif coin == "usd":
+                contract = cfg['cusd_contract']
+            coin_abi = contract['abi']
+            with open(coin_abi) as f:
+                abi = json.load(f)
+            coin = [abi,contract]
+            return coin
         except Exception as e:
             return ""
     

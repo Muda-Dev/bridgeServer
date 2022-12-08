@@ -9,25 +9,25 @@ import ssl
 from flask import jsonify
 from dotenv import load_dotenv
 from config import config as cfg
+from helpers.modal import Modal as md
 load_dotenv()
 
 
 rpc_endpoint = cfg['provider']
+ugx_contract = md().get_contract("ugx")
+usd_contract = md().get_contract("usd")
+print(ugx_contract)
+
 web3 = Web3(Web3.WebsocketProvider(rpc_endpoint))
-cugx_contract_address = cfg['cugx_contract_address']
-cusd_contract_address = cfg['cusd_contract_address']
 
-cugx_abi = cfg['cugx_abi']
-cusd_abi = cfg['usd_abi']
-
-with open(cugx_abi) as f:
-    cugx_data = json.load(f)
-with open(cusd_abi) as f:
-    cusd_data = json.load(f)
 
 #  address and abi
-cugx_contract_address_abi = cugx_data
-cusd_contract_address_abi = cusd_data
+cugx_contract_address_abi = ugx_contract[0]
+cusd_contract_address_abi = usd_contract[0]
+
+cugx_contract_address = ugx_contract[1]['contract_address']
+cusd_contract_address = usd_contract[1]['contract_address']
+
 
 cugx_contract = web3.eth.contract(address=cugx_contract_address, abi=cugx_contract_address_abi)
 cusd_contract = web3.eth.contract(address=cusd_contract_address, abi=cusd_contract_address_abi)
@@ -41,6 +41,7 @@ def handle_event(event):
         call_back_url = os.getenv("callback_url")
         data_1 = Web3.toJSON(event)
         data = json.loads(data_1)
+        print(data)
         address = data.get("address")
         hash = data["transactionHash"]
         account_number = ""
@@ -124,7 +125,7 @@ def main():
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(asyncio.gather(log_loop(event_filter, 2)))
-        loop.run_until_complete(asyncio.gather(log_loop(event_filter_2, 2)))
+        #loop.run_until_complete(asyncio.gather(log_loop(event_filter_2, 2)))
         # log_loop(tx_filter, 2)))
     finally:
         # close loop to free up system resources

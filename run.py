@@ -8,10 +8,15 @@ from waitress import serve
 from helpers.dbhelper import Database as Db
 from application import cron
 import sys
+from config import currencies
 application.register_blueprint(account)
 
 if(os.getenv("callback_url") == ""):
     print("callback url needs to be set")
+    exit()
+
+if(os.getenv("currency") not in currencies):
+    print("currency needs to be one of ", str(currencies))
     exit()
 
 try:
