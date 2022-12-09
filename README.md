@@ -4,22 +4,27 @@ It allows you to be notified when a payment is received by a particular account.
 It can be used by any project that needs to accept or send payments such as client wallets or banks making payouts.
 
 Handles:
-
 - Creating web3 transactions.
 - Monitoring a celo based contracts.
+
+## Service providers
+Providers are organisations/companies that offer end user services like money transfers, utiltiy payments like airtime, water payments etc. To send transactions as a client, you will need a service id. We keep an open list of all service providers [here](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/services.json).
+You can also access the services as a json endpoint [here](https://muda-dev.github.io/Liqudity-Rail/services.json).
+
+
 ## Downloading the server
 Prebuilt binaries of the rail-server server are available on the for easy donwload and execction.
 
 | Platform       | Binary file name                                                                         |
 |----------------|------------------------------------------------------------------------------------------|
-| Mac OSX 64 bit | [rail-darwin-amd64](https://github.com/stellar/rail-server/releases)      |
-| Linux 64 bit   | [rail-linux-amd64](https://github.com/stellar/rail-server/releases)       |
-| Windows 64 bit | [rail-windows-amd64.exe](https://github.com/stellar/rail-server/releases) |
+| Mac OSX 64 bit | [rail-darwin-amd64](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/mac.zip)      |
+| Linux 64 bit   | [rail-linux-amd64](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/mac.zip)       |
+| Windows 64 bit | [rail-windows-amd64.exe](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/mac.zip) |
 
 Alternatively, you can [build](#building) the binary yourself.
 ## Config
 
-The `.env` file must be present in a working directory. Here is an [example configuration file](https://github.com/stellar/rail-server/blob/master/example.env). env file should contain following values:
+The `.env` file must be present in a working directory. Here is an [example configuration file](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/example.env). env file should contain following values:
 
 * `port` - server listening port
 * `address` - this is the address that will be receiving payments
@@ -49,7 +54,7 @@ After creating `rail.cfg` file, you need to run DB migrations:
 ```
 ## Client API
 
-`Content-Type` of requests data should be `application/x-www-form-urlencoded`.
+`Content-Type` of requests data should be `application/json`.
 
 ### GET /create-keypair
 
