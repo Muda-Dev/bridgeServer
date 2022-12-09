@@ -1,4 +1,4 @@
-# rail-server
+# Rail rail Server
 This is a stand alone server written in python. It is designed to make connecting to the celo network as easy as possible. 
 It allows you to be notified when a payment is received by a particular account. It also allows you to send a payment via a HTTP request.
 It can be used by any project that needs to accept or send payments such as client wallets or banks making payouts.
@@ -8,18 +8,18 @@ Handles:
 - Creating web3 transactions.
 - Monitoring a celo based contracts.
 ## Downloading the server
-Prebuilt binaries of the bridge-server server are available on the for easy donwload and execction.
+Prebuilt binaries of the rail-server server are available on the for easy donwload and execction.
 
 | Platform       | Binary file name                                                                         |
 |----------------|------------------------------------------------------------------------------------------|
-| Mac OSX 64 bit | [bridge-darwin-amd64](https://github.com/stellar/bridge-server/releases)      |
-| Linux 64 bit   | [bridge-linux-amd64](https://github.com/stellar/bridge-server/releases)       |
-| Windows 64 bit | [bridge-windows-amd64.exe](https://github.com/stellar/bridge-server/releases) |
+| Mac OSX 64 bit | [rail-darwin-amd64](https://github.com/stellar/rail-server/releases)      |
+| Linux 64 bit   | [rail-linux-amd64](https://github.com/stellar/rail-server/releases)       |
+| Windows 64 bit | [rail-windows-amd64.exe](https://github.com/stellar/rail-server/releases) |
 
 Alternatively, you can [build](#building) the binary yourself.
 ## Config
 
-The `.env` file must be present in a working directory. Here is an [example configuration file](https://github.com/stellar/bridge-server/blob/master/example.env). env file should contain following values:
+The `.env` file must be present in a working directory. Here is an [example configuration file](https://github.com/stellar/rail-server/blob/master/example.env). env file should contain following values:
 
 * `port` - server listening port
 * `address` - this is the address that will be receiving payments
@@ -37,7 +37,7 @@ The `.env` file must be present in a working directory. Here is an [example conf
 
 ## Getting started
 
-After creating `bridge.cfg` file, you need to run DB migrations:
+After creating `rail.cfg` file, you need to run DB migrations:
 ```
 ./rail --migrate-db
 ```
@@ -110,9 +110,9 @@ Get's the balance of the address set in your .env file
 
 ```json
 {
-                "balance": 100000000,
-                "asset": "cUGX",
-                "contract_address": "0xF968575Dc8872D3957E3b91BFAE0d92D4c9c1Dd5"
+    "balance": 100000000,
+    "asset": "cUGX",
+    "contract_address": "0xF968575Dc8872D3957E3b91BFAE0d92D4c9c1Dd5"
 }
 ```
 
@@ -143,26 +143,26 @@ name | description
 #### Request
 
 ```json
-       {
-           "amount": 100000,
-           "tx_hash": "0x3878c4a1080148901f6c6590ae003239995add843efdb2e0d638371c64a9a998",
-           "service_id": 1,
-           "account_number": "256787700000",
-       }
+{
+    "amount": 100000,
+    "tx_hash": "0x3878c4a1080148901f6c6590ae003239995add843efdb2e0d638371c64a9a998",
+    "service_id": 1,
+    "account_number": "256787700000",
+}
 ```
 #### Response
 ```json
-       {
-           "sent_amount": 100000,
-           "trans_id": "124567890",
-       }
+{
+    "sent_amount": 100000,
+    "trans_id": "124567890",
+}
 ```
 
-Respond with `200 OK` when processing succeeded. Any other status code will be considered an error and bridge server will keep sending this payment request again and will not continue to next payments until it receives `200 OK` response.
+Respond with `200 OK` when processing succeeded. Any other status code will be considered an error and rail server will keep sending this payment request again and will not continue to next payments until it receives `200 OK` response.
 
 ## Webhook
 
-Once a transaction has been sent to the callback endpoitn and a service has been issued to the sender, the bridge server will send a webhook to the client notifying them of the finak status of the transastion. The webhook URL
+Once a transaction has been sent to the callback endpoitn and a service has been issued to the sender, the rail server will send a webhook to the client notifying them of the finak status of the transastion. The webhook URL
 
 `Content-Type` of requests data will be `application/json`.
 #### Request
@@ -175,16 +175,16 @@ name | description
 `provider_trans_id` | Transaction from the servive providers platform
 
 ```json
-        {
-                "status": "success",
-                "tx_hash": "0x3878c4a1080148901f6c6590ae003239995add843efdb2e0d638371c64a9a998",
-                "provider_trans_id": "124567890",
-                "account_number": "256787700000",
-                "sent_amount": "100000"
-            }
+{
+    "status": "success",
+    "tx_hash": "0x3878c4a1080148901f6c6590ae003239995add843efdb2e0d638371c64a9a998",
+    "provider_trans_id": "124567890",
+    "account_number": "256787700000",
+    "sent_amount": "100000"
+}
 ```
 #### Response
-Respond with `200 OK` when processing succeeded. Any other status code will be considered an error and bridge server will keep sending this payment request again and will not continue to next payments until it receives `200 OK` response.
+Respond with `200 OK` when processing succeeded. Any other status code will be considered an error and rail server will keep sending this payment request again and will not continue to next payments until it receives `200 OK` response.
 
 ## Building
 
@@ -211,4 +211,3 @@ Then simply open:
 http://localhost:8001
 ```
 in a browser.
-
