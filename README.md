@@ -1,4 +1,4 @@
-# bridge-server
+# rail-server
 This is a stand alone server written in python. It is designed to make connecting to the celo network as easy as possible. 
 It allows you to be notified when a payment is received by a particular account. It also allows you to send a payment via a HTTP request.
 It can be used by any project that needs to accept or send payments such as client wallets or banks making payouts.
@@ -51,7 +51,7 @@ After creating `bridge.cfg` file, you need to run DB migrations:
 
 `Content-Type` of requests data should be `application/x-www-form-urlencoded`.
 
-### POST /create-keypair
+### GET /create-keypair
 
 Creates a new random key pair.
 
@@ -66,7 +66,7 @@ Creates a new random key pair.
 
 ### POST /payment
 
-Creates a new transaction.
+Creates a new transaction and uses the private key set in your .env file to sign the transaction.
 ```json
 {
     "amount": 10,
@@ -91,7 +91,124 @@ Creates a new transaction.
     "status": 100
 }
 ```
+### GET /get_linked_address
 
+Get's the address set in your .env file
 
+#### Response
 
+```json
+{
+    "address": "0xF968575Dc8872D3957E3b91BFAE0d92D4c9c1Dd5"
+}
+```
+### GET /get_balance
+
+Get's the balance of the address set in your .env file
+
+#### Response
+
+```json
+{
+                "balance": 100000000,
+                "asset": "cUGX",
+                "contract_address": "0xF968575Dc8872D3957E3b91BFAE0d92D4c9c1Dd5"
+}
+```
+
+## Running the service as a client
+
+ Start the server with a client arg:
+```
+./rail provider service
+```
+The server will start a blockchain listeing service which will listen for events emitted by the contract. Once a new payment is received, a callback will be sent to the callback url.
+
+## Callbacks
+
+The Rail server listens for payment operations to the account specified in the .env file ad address. Every time 
+a payment arrives it will send a HTTP POST request to callback_url endpoint.
+`Content-Type` of requests data will be `application/json`.
+
+### POST callback_url
+
+A POST request will be sent to the callback url set in the .env file.
+name | description
+--- | ---
+`tx_hash` | Transaction hash from the blockchain
+`amount` | amount recived from the transaction
+`service_id` | service_id received from the emited even
+`account_number` | account_number received from the emited even
+
+#### Request
+
+```json
+       {
+           "amount": 100000,
+           "tx_hash": "0x3878c4a1080148901f6c6590ae003239995add843efdb2e0d638371c64a9a998",
+           "service_id": 1,
+           "account_number": "256787700000",
+       }
+```
+#### Response
+```json
+       {
+           "sent_amount": 100000,
+           "trans_id": "124567890",
+       }
+```
+
+Respond with `200 OK` when processing succeeded. Any other status code will be considered an error and bridge server will keep sending this payment request again and will not continue to next payments until it receives `200 OK` response.
+
+## Webhook
+
+Once a transaction has been sent to the callback endpoitn and a service has been issued to the sender, the bridge server will send a webhook to the client notifying them of the finak status of the transastion. The webhook URL
+
+`Content-Type` of requests data will be `application/json`.
+#### Request
+name | description
+--- | ---
+`status` | send success or failed
+`tx_hash` | Transaction hash from the blockchain
+`sent_amount` | amount paid to the account number provided
+`account_number` | account that received the transaction
+`provider_trans_id` | Transaction from the servive providers platform
+
+```json
+        {
+                "status": "success",
+                "tx_hash": "0x3878c4a1080148901f6c6590ae003239995add843efdb2e0d638371c64a9a998",
+                "provider_trans_id": "124567890",
+                "account_number": "256787700000",
+                "sent_amount": "100000"
+            }
+```
+#### Response
+Respond with `200 OK` when processing succeeded. Any other status code will be considered an error and bridge server will keep sending this payment request again and will not continue to next payments until it receives `200 OK` response.
+
+## Building
+
+python3 is used for building and testing.
+
+Given you have a running python installation, you can start by installing depencies with pip3:
+
+```
+pip3 install -r requirements.txt
+```
+
+After a successful installation, you should run the app with.
+
+## Running as a service provider
+```
+python3 run.py provider service
+```
+## Running as a client
+```
+python3 run.py provider client
+```
+Then simply open:
+```
+http://localhost:8001
+```
+in a browser.
 
