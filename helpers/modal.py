@@ -38,41 +38,44 @@ class Modal:
             code = 403
         return jsonify(rsp), code
 
-    def get_contract(self,coin):
+    def get_contract(self, coin):
         try:
-            contract=""
+            contract = ""
             if coin == "ugx":
                 contract = cfg['cugx_contract']
             elif coin == "usd":
                 contract = cfg['cusd_contract']
             coin_abi = contract['abi']
-            with open(coin_abi) as f:
-                abi = json.load(f)
-            coin = [abi,contract]
+            abi = coin_abi
+            coin = [abi, contract]
             return coin
         except Exception as e:
+            print(e)
             return ""
-    
+
     @staticmethod
     def send_post_request(data, url):
         payload = json.dumps(data)
         headers = {
             'Content-Type': 'application/json'
         }
+        print("payload", payload)
         response = requests.request("POST", url, headers=headers, data=payload)
         return response
 
     @staticmethod
     def file_get_contents(url):
         try:
-            url = str(url).replace(" ", "+") # just in case, no space in url
+            url = str(url).replace(" ", "+")  # just in case, no space in url
             http = urllib3.PoolManager()
             r = http.request('GET', url)
-            #r.status
+            # r.status
             print(r.data)
             return True
         except Exception as e:
             print(e)
         return ''
+
+
 def token_required(f):
     return True

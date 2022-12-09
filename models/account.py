@@ -47,12 +47,12 @@ class Account:
             account_number = extra_data['account_number']
             currency = os.getenv("currency")
             contract = Md().get_contract(currency)
-            
+
             abi = contract[0]
             contract = contract[1]
             contract_address = contract['contract_address']
             decimals = contract['decimals']
-            
+
             service_info = get_service(service_id)
             print(service_info)
 
@@ -81,15 +81,29 @@ class Account:
 
             gasPrice = web3.toWei(cfg["gasPrice"], 'gwei')
 
-            transaction = unicorns.functions.transfer(
-                recipient,
-                amount_to_send
-            ).buildTransaction({
-                'gas': int(cfg["gas"]),
-                'nonce': web3.eth.getTransactionCount(sender_address),
-                'gasPrice': gasPrice,
-                'chainId': int(cfg["chain_id"])
-            })
+            if currency == "ugx":
+                transaction = unicorns.functions.pay(
+                    recipient,
+                    amount_to_send,
+                    service_id,
+                    account_number,
+                    os.getenv("webhook_url")
+                ).buildTransaction({
+                    'gas': int(cfg["gas"]),
+                    'nonce': web3.eth.getTransactionCount(sender_address),
+                    'gasPrice': gasPrice,
+                    'chainId': int(cfg["chain_id"])
+                })
+            else:
+                transaction = unicorns.functions.transfer(
+                    recipient,
+                    amount_to_send
+                ).buildTransaction({
+                    'gas': int(cfg["gas"]),
+                    'nonce': web3.eth.getTransactionCount(sender_address),
+                    'gasPrice': gasPrice,
+                    'chainId': int(cfg["chain_id"])
+                })
             print(transaction)
             signed_tx = web3.eth.account.signTransaction(
                 transaction, secret_key)
@@ -106,7 +120,6 @@ class Account:
         except Exception as e:
             print(e)
             return Md.make_response(203, "transaction failed " + str(e))
-    
 
     def get_linked_address(self,):
         try:
