@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, json
 from models.account import Account
-from libs.modal import Modal as md, modal, token_required
+from helpers.modal import Modal as md
 
 bp_app = Blueprint('account', __name__)
 
@@ -28,6 +28,13 @@ def account_balance(account_id):
 def make_transfer():
     return Account().make_transfer(request)
 
+@bp_app.route("/get_balance", methods=["GET"])
+def get_balance():
+    return Account().get_env_balance()
+    
+@bp_app.route("/get_linked_address", methods=["GET"])
+def get_linked_address():
+    return Account().get_linked_address()
 
 @bp_app.route("/account_statement/<account_id>", methods=["GET"])
 def account_statement():
