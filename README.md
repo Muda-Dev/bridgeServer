@@ -1,4 +1,4 @@
-# Rail rail Server
+# Rail Bridge Server
 This is a stand alone server written in python. It is designed to make connecting to the celo network as easy as possible. 
 It allows you to be notified when a payment is received by a particular account. It also allows you to send a payment via a HTTP request.
 It can be used by any project that needs to accept or send payments such as client wallets or banks making payouts.
