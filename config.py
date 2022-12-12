@@ -4,6 +4,8 @@ load_dotenv()
 
 version="1.0.0"
 currencies=["ugx","usd"]
+db="db_1.sql"
+service_url = "https://muda-dev.github.io/Liqudity-Rail/services.json"
 stage = {
     "cugx_contract_address":"0x82532B034275CFf660044a0728b5d91Bad1704d1",
     "cusd_contract_address":"0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",

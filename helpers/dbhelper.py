@@ -1,6 +1,8 @@
+import imp
 from flask import request, jsonify
 from application import mysql
-
+from config import db
+import os
 class Database:
     def __init__(self):
         self.conn = mysql.connection.cursor()
@@ -9,7 +11,7 @@ class Database:
     
     def checkConnection(self):
         try:
-            rows = self.select("SELECT name FROM sys.tables")
+            rows = self.select("SELECT table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = '"+os.getenv('DBNAME')+"' ")
             print("Database connected!")
             return True
         except Exception as e:
@@ -22,13 +24,32 @@ class Database:
         rows = self.conn.fetchall()
         return rows
 
+    def migrate_db(self):
+        try:
+            f = open(db, "r")
+            query = " "
+            for x in f:
+                query = query+x
+                if ";" in x:
+                    self.runQuery(query)
+                    query = "";
+                    print("...")
+            print("Database import completed successfully.")
+            return True
+        except Exception as e:
+            print(e)
+            return False
     
+    def runQuery(self, query):
+        self.conn.execute(query)
+        mysql.connection.commit()
+        return True
+
     def delete(self, query):
         self.conn.execute(query)
         mysql.connection.commit()
         self.conn.close()
         return True
-
     
     def insert(self, table_name, **data):
         keys = ', '.join(['%s'] * len(data))

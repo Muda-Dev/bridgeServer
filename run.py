@@ -1,3 +1,4 @@
+from pickle import FALSE
 from dotenv import load_dotenv
 load_dotenv()  
 from application import application
@@ -24,11 +25,37 @@ if(os.getenv("currency") not in currencies):
     exit()
 
 try:
-    arg_1 = sys.argv[1]
-    arg_2 = sys.argv[2]
+    arg_1 = "provider"
+    arg_2 = "client"
+    arg_count = 0
+
+    if sys.argv:
+        arg_count = len(sys.argv)
+        print(arg_count)
+
+    if arg_count > 1:
+        arg_1 = sys.argv[1]
+    
+    with application.app_context():
+        response = Db().checkConnection()
+        if response == FALSE:
+            print("Database connection error. exiting ...")
+            exit()
+
+
+
+    if arg_1 == "db-migrate":
+        print("starting db migrations")
+        with application.app_context():
+            Db().migrate_db()
+            exit()
+
     if arg_1 != "provider":
         print("arg one should be 'provider'")
         exit()
+
+    if arg_count >2 :
+        arg_2 = sys.argv[2]
 
     if arg_2 == "service":
         print("starting service in provider mode")
@@ -41,7 +68,7 @@ try:
         else:
             serve(application, host="0.0.0.0", port=os.environ.get("PORT"))
     else:
-        print("invalid argument")
+        print("un expected arg..")
         exit()
 except Exception as e:
     print("an exception was thrown, make sure you have the correct arguments")

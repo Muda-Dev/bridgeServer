@@ -9,6 +9,7 @@ from helpers.modal import Modal as Md
 from application import web3
 import requests
 from config import config as cfg
+from config import service_url
 import json
 import os
 
@@ -39,10 +40,8 @@ class Account:
             print(data)
             amount = data['amount']
             recipient = data['recipient']
-            address = data['address']
             secret_key = os.getenv("pay_account_private_key")
             extra_data = data['extra_data']
-            sending_token = data['sending_token']
             service_id = extra_data['service_id']
             account_number = extra_data['account_number']
             currency = os.getenv("currency")
@@ -110,6 +109,21 @@ class Account:
             tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
             decoded_hash = tx_hash.hex()
             print("transaction sent, ", decoded_hash)
+
+            sql = {
+                "transaction_id": decoded_hash,
+                "service_id": service_id,
+                "account_number": account_number,
+                "status": "PENDING",
+                "currency":currency,
+                "amount":amount_to_send,
+                "thirdparty_transaction_id": "",
+                "source": sender_address,
+                 "destination": recipient,  
+                "request_obj": data}
+            resp = Db().insert("SentTransaction",**sql)
+            print(resp)
+
             message = {"txHash": decoded_hash,
                        "currency": os.getenv("coin"),
                        "amount": amount,
@@ -142,19 +156,11 @@ class Account:
             bl = {
                 "balance": web3.fromWei(balance, 'gwei'),
                 "asset": os.getenv("coin"),
-                "contract_address": os.getenv("cugx_contract_address")
+                "contract_address": cfg["cugx_contract_address"]
             }
 
             return jsonify(bl), 200
 
-            account = web3.eth.get_balance(address)
-            print(account)
-            balance_list = dict()
-            for key in account:
-                balance_value = self.from_wei(account[key])
-                balance_list[key] = balance_value
-            balance_list[self.token_code] = balance
-            return jsonify(balance_list)
         except Exception as e:
             print(e)
             return Md.make_response(203, str(e))
@@ -190,7 +196,7 @@ class Account:
 
 
 def get_service(service_id):
-    url = "https://muda-dev.github.io/Liqudity-Rail/services.json"
+    url = service_url
     response = requests.request("GET", url)
     data = response.json()
     for x in data:
