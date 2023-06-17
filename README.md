@@ -1,18 +1,23 @@
 # Rail Bridge Server
-The Rail Bridge Server is a standalone server implemented in Python. It's designed to simplify connections to the Web3 network. The server enables you to receive notifications when a specific account receives a payment, and also permits sending payments via HTTP requests. It can be adopted by any project needing to accept or send payments such as client wallets or banks executing payouts.
+This is a standalone server written in Python, designed to provide an easy interface to Web3 and XRP networks. It acts as a bridge between blockchain networks and any project that needs to handle blockchain transactions such as client wallets, banks, and payment processors. 
 
+## Server Capabilities
 The server is capable of:
-- Creating Web3 transactions.
-- Monitoring Web3-based contracts.
+- Creating and sending transactions on Web3 and XRP networks.
+- Monitoring transactions on specific Web3-based contracts.
 - Monitoring XRP asset transactions.
-
-## Service Providers
-Service providers are organizations/companies offering end-user services like money transfers, utility payments like airtime, water payments, etc. To send transactions as a client, you will require a service ID. We maintain an open list of all service providers [here](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/services.json). You can also access the services as a JSON endpoint [here](https://muda-dev.github.io/Liqudity-Rail/services.json).
+- Creating accounts on supported blockchains.
+- Issuing and managing assets on the XRP network.
+- Checking account balances across supported blockchains.
+- Processing payments and transfers to merchants and individual accounts.
+- Listening and reacting to incoming transactions.
 
 ## Supported Block Chains
+The server supports multiple blockchains, including;
 1. [CELO](https://celo.org/)
-2. [ETHEREUM](https://ethereum.org/)
-3. [XRP](https://ripple.com/currency/)
+2. [ETHEREUM](https://ethereum.org/en/)
+3. [XRP](https://xrpl.org/).
+Your can set a default chain use in the `.env` file or set it to 0 to support all chains.
 
 ## Downloading the Server
 Prebuilt binaries of the Rail Bridge Server are available for easy download and execution.
@@ -28,19 +33,29 @@ Alternatively, you can [build](#building) the binary yourself.
 
 The `.env` file must be present in a working directory. Here is an [example configuration file](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/example.env). env file should contain following values:
 
-* `port` - server listening port
-* `address` - this is the address that will be receiving payments
-* `pay_account_private_key` - This is your web3 private key that will be used to make out going payments.
+The `.env` file must be present in the working directory. Here is an [example configuration file](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/example.env). env file should contain the following values:
+
+* `port` - Server listening port.
+* `address` - This is the address that will be receiving payments.
+* `pay_account_private_key` - This is your web3 private key that will be used to make outgoing payments.
 * `callback_url` - URL that will be called when a new payment has been received.
 * `webhook_url` - URL which will receive payment notifications from service providers once a transaction has been completed.
-* `currency` - currency that you transact in. Currently this is one of ugx and usd
+* `currency` - Currency that you transact in. Currently, this is one of UGX, USD, EUR, etc.
+* `default_currency` - Default currency used for transactions. This is one of UGX, USD, EUR, etc.
+* `default_chain` - Default blockchain used for transactions. This is one of CELO, ETHEREUM, XRP, etc.
 * `database`
-  * `HOST_NAME` - by default it's localhost
-  * `USER_NAME` - your database username
-  * `PASSWORD` - your database password
-  * `DBNAME` - your database name
-* `mode` - this is one of [dev,test,live] this setting tells which network the service is going to use
-* `enc_key` - encryption key that will be used to sign your callbacks
+  * `HOST_NAME` - By default, it's localhost.
+  * `USER_NAME` - Your database username.
+  * `PASSWORD` - Your database password.
+  * `DBNAME` - Your database name.
+* `mode` - This is one of [dev,test,live]. This setting tells which network the service is going to use.
+* `enc_key` - Encryption key that will be used to sign your callbacks.
+* `XRP` - Details for XRP network.
+  * `XRP_address` - The XRP address for receiving payments.
+  * `XRP_secret` - The secret key for the XRP address.
+* `asset_issuer` - The issuer of the asset (For example, in the Stellar network).
+* `asset_code` - The code of the asset issued.
+* `supported_currencies` - List of supported currencies. This should be a comma-separated string of currency codes.
 
 ## Getting started
 
