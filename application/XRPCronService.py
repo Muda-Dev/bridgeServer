@@ -9,11 +9,11 @@ from xrpl.ledger import get_latest_validated_ledger_sequence
 
 load_dotenv()
 
-xrpl_ws = "wss://testnet.xrpl-labs.com"
-address = "rJB2MGSEwZ3EfhxWKErwcFKxvVJjbSMePz"
-secretKey = "ssC2spVyWwVrYYMy2Ni9CpaJtz3sT"
-asset_issuer = "rUGX"
-asset_code = "rNWY6caugMoE1Qa89ZBDM5TfgzWrw8Du32"
+xrpl_ws = os.getenv("xrpl_ws")
+address = os.getenv("address")
+secretKey = os.getenv("secretKey")
+asset_issuer = os.getenv("asset_issuer")
+asset_code = os.getenv("asset_code")
 
 test_wallet = Wallet(seed=secretKey, sequence=16237283)
 

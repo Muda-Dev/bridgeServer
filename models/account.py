@@ -85,10 +85,10 @@ class Account:
 
     @staticmethod
     def handle_xrp_transfer(amount, merchant_address, data):
-        assetIssuer = data['asset_issuer']
-        assetCode = data['asset_code']
-        secret_key = os.getenv("XRP_SEED")
-        address = os.getenv("XRP_ADDRESS")
+        assetIssuer = os.getenv("asset_issuer")
+        assetCode = os.getenv("asset_code")
+        secret_key = os.getenv("SecretKey")
+        address = os.getenv("address")
         hash_value = xrp.send_asset(
             address, secret_key, assetCode, amount, merchant_address, assetIssuer)
         return hash_value
