@@ -1,217 +1,149 @@
-from audioop import add
-from email import message
-import imp
-from locale import currency
-from unicodedata import decimal
 from flask import jsonify
+import os
+import requests
+
+from application import web3
+from helpers.XRPLedger import XRPLedger
+from helpers.contracts import config as cfg
 from helpers.dbhelper import Database as Db
 from helpers.modal import Modal as Md
-from application import web3
-import requests
-from config import config as cfg
-from config import service_url
-import json
-import os
+from helpers.EVMConnector import EVMConnector
+from helpers.config import service_url
+
+xrp = XRPLedger()
+connector = EVMConnector()
 
 
 class Account:
     def __init__(self):
         self.wallet = ""
 
-    def to_wei(self, amount):
-        return amount * self.precision
+    @staticmethod
+    def to_wei(amount):
+        return amount * cfg["precision"]
 
-    def from_wei(self, amount):
-        return amount / self.precision
+    @staticmethod
+    def from_wei(amount):
+        return amount / cfg["precision"]
 
-    def generate_keypair(self):
+    @staticmethod
+    def generate_keypair():
+        keypairs = []
+
+        # Generate key pair for Ethereum (EVM)
         account = web3.eth.account.create()
         decoded_hash = account.key.hex()
-        response = {
+        evm_keypair = {
             "address": account.address,
             "privateKey": decoded_hash
         }
-        return response
+        keypairs.append({"EVM": evm_keypair})
 
-    def make_transfer(self, rq):
+        # Generate key pair for XRP
+        classic_address, seed = xrp.generate_key_pair()
+        xrp_keypair = {
+            "classic_address": classic_address,
+            "seed": seed
+        }
+        keypairs.append({"XRP": xrp_keypair})
+        return keypairs
+
+    @staticmethod
+    def make_transfer(request):
         try:
-            data = rq.json
-            print("transaction request received")
-            print(data)
+            data = request.json
             amount = data['amount']
             recipient = data['recipient']
-            secret_key = os.getenv("pay_account_private_key")
             extra_data = data['extra_data']
             service_id = extra_data['service_id']
-            account_number = extra_data['account_number']
-            currency = os.getenv("currency")
-            contract = Md().get_contract(currency)
-
-            abi = contract[0]
-            contract = contract[1]
-            contract_address = contract['contract_address']
-            decimals = contract['decimals']
-
-            service_info = get_service(service_id)
-            print(service_info)
+            chain = extra_data['chain']
+            currency = data['currency']
 
             if amount <= 0:
                 return Md.make_response(404, "invalid amount")
 
-            if len(service_info) == 0:
-                print("service not found")
+            service_info = get_service(service_id, chain)
+            merchant_address = service_info['address']
+
+            if not service_info:
                 return Md.make_response(404, "service not found")
 
-            merchant_celo_address = service_info['address']
-            if recipient != merchant_celo_address:
+            if recipient != merchant_address:
                 return Md.make_response(404, "sent recipient address does not match receiver address")
 
-            amount_to_send = int(amount) * int(decimals)
-            print(amount_to_send)
-
-            unicorns = web3.eth.contract(address=contract_address, abi=abi)
-            print(unicorns.address)
-
-            sender_account = web3.eth.account.privateKeyToAccount(secret_key)
-
-            sender_address = sender_account.address
-            #sender_address = address
-            print(sender_address)
-
-            gasPrice = web3.toWei(cfg["gasPrice"], 'gwei')
-
-            if currency == "ugx":
-                transaction = unicorns.functions.pay(
-                    recipient,
-                    amount_to_send,
-                    service_id,
-                    account_number,
-                    os.getenv("webhook_url")
-                ).buildTransaction({
-                    'gas': int(cfg["gas"]),
-                    'nonce': web3.eth.getTransactionCount(sender_address),
-                    'gasPrice': gasPrice,
-                    'chainId': int(cfg["chain_id"])
-                })
+            if chain == "XRP":
+                hash_value = Account.handle_xrp_transfer(
+                    amount, merchant_address, data)
             else:
-                transaction = unicorns.functions.transfer(
-                    recipient,
-                    amount_to_send
-                ).buildTransaction({
-                    'gas': int(cfg["gas"]),
-                    'nonce': web3.eth.getTransactionCount(sender_address),
-                    'gasPrice': gasPrice,
-                    'chainId': int(cfg["chain_id"])
-                })
-            print(transaction)
-            signed_tx = web3.eth.account.signTransaction(
-                transaction, secret_key)
-            tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-            decoded_hash = tx_hash.hex()
-            print("transaction sent, ", decoded_hash)
+                hash_value, contract_address, amount_to_send = Account.handle_evm_transfer(
+                    amount, recipient, currency, data)
 
-            sql = {
-                "transaction_id": decoded_hash,
-                "service_id": service_id,
-                "account_number": account_number,
-                "status": "PENDING",
-                "currency":currency,
-                "amount":amount_to_send,
-                "thirdparty_transaction_id": "",
-                "source": sender_address,
-                 "destination": recipient,  
-                "request_obj": data}
-            resp = Db().insert("SentTransaction",**sql)
-            print(resp)
-
-            message = {"txHash": decoded_hash,
-                       "currency": os.getenv("coin"),
-                       "amount": amount,
-                       "contract_address": contract_address
-                       }
-            return Md.make_response(100, message)
+            return Account.log_transaction(hash_value, service_id, chain, currency, amount_to_send, recipient, data, contract_address)
 
         except Exception as e:
-            print(e)
             return Md.make_response(203, "transaction failed " + str(e))
 
-    def get_linked_address(self,):
-        try:
-            secret_key = os.getenv("pay_account_private_key")
-            sender_account = web3.eth.account.privateKeyToAccount(secret_key)
-            address = sender_account.address
-            return jsonify({"address": address}), 200
-        except Exception as e:
-            print(e)
-            return Md.make_response(203, str(e))
+    @staticmethod
+    def handle_xrp_transfer(amount, merchant_address, data):
+        assetIssuer = data['asset_issuer']
+        assetCode = data['asset_code']
+        secret_key = os.getenv("XRP_SEED")
+        address = os.getenv("XRP_ADDRESS")
+        hash_value = xrp.send_asset(
+            address, secret_key, assetCode, amount, merchant_address, assetIssuer)
+        return hash_value
 
-    def get_env_balance(self,):
-        try:
-            secret_key = os.getenv("pay_account_private_key")
-            sender_account = web3.eth.account.privateKeyToAccount(secret_key)
-            address = sender_account.address
-            unicorns = web3.eth.contract(
-                address=self.contract_address, abi=self.abi)
-            balance = unicorns.functions.balanceOf(address).call()
-            bl = {
-                "balance": web3.fromWei(balance, 'gwei'),
-                "asset": os.getenv("coin"),
-                "contract_address": cfg["cugx_contract_address"]
-            }
+    @staticmethod
+    def handle_evm_transfer(amount, recipient, currency, data):
+        secret_key = os.getenv("pay_account_private_key")
+        contract_abi, contract_info = Md().get_contract(currency)
+        contract_address = contract_info['contract_address']
+        decimals = contract_info['decimals']
+        amount_to_send = int(amount) * int(decimals)
 
-            return jsonify(bl), 200
+        unicorns = web3.eth.contract(
+            address=contract_address, abi=contract_abi)
 
-        except Exception as e:
-            print(e)
-            return Md.make_response(203, str(e))
+        sender_account = web3.eth.account.privateKeyToAccount(secret_key)
+        sender_address = sender_account.address
 
-    def get_account_balance(self, address):
-        try:
-            unicorns = web3.eth.contract(
-                address=self.contract_address, abi=self.abi)
-            balance = unicorns.functions.balanceOf(address).call()
+        tx_hash = connector.make_contract_token_transfer(
+            sender_address, recipient, amount, data['gas_price'], data['chain_id'],
+            contract_address, contract_abi
+        )
+        return tx_hash.hex(), contract_address, amount_to_send
 
-            account = web3.get_total_balance(address)
-            balance_list = dict()
-            for key in account:
-                balance_value = self.from_wei(account[key])
-                balance_list[key] = balance_value
-            balance_list[self.token_code] = balance
-            return jsonify(balance_list)
-        except Exception as e:
-            print(e)
-            return Md.make_response(203, str(e))
+    @staticmethod
+    def log_transaction(hash_value, service_id, chain, currency, amount_to_send, recipient, data, contract_address):
+        sql = {
+            "transaction_id": hash_value,
+            "service_id": service_id,
+            "chain": chain,
+            "account_number": data['extra_data']['account_number'],
+            "status": "PENDING",
+            "currency": currency,
+            "amount": amount_to_send,
+            "thirdparty_transaction_id": "",
+            "source": "sender_address",
+            "destination": recipient,
+            "request_obj": data
+        }
+        Db().insert("SentTransaction", **sql)
 
-    def make_transfer_uxg_contract(self, rq):
-        # TODO: ADD THE cUGX CONTRACT TRANSACTIONS
-        try:
-            ugx_contract = "0x0156308E8fC5763F31afCc2153a387cdEEFd5ecF"
-            ABI = ""
-            contract_info = web3.eth.contract(ugx_contract)
-            function = contract_info.functions.name().call()
-            print(function)
-
-        except Exception as e:
-            print(e)
+        message = {
+            "txHash": hash_value,
+            "currency": os.getenv("coin"),
+            "amount": data['amount'],
+            "contract_address": contract_address
+        }
+        return Md.make_response(100, message)
 
 
-def get_service(service_id):
+def get_service(service_id, chain):
     url = service_url
     response = requests.request("GET", url)
     data = response.json()
     for x in data:
-        print(x["service_id"])
-        if x['service_id'] == service_id:
+        if x['service_id'] == service_id and x['chain'] == chain:
             return x
     return []
-
-
-def log_transaction(decoded_hash, recipient, amount, sending_token, extra_data):
-    # save txn to local db
-    return True
-
-
-def auth_user(username, password):
-    values = {"username": username, "password": password}
-    data = Db.select("sia_user", "*", **values)
-    return data

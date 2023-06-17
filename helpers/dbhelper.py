@@ -1,7 +1,7 @@
 import imp
 from flask import request, jsonify
 from application import mysql
-from config import db
+from helpers.config import db
 import os
 class Database:
     def __init__(self):
