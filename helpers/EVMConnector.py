@@ -1,5 +1,4 @@
 from web3 import Web3
-from config import config as cfg
 import os
 
 

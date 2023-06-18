@@ -7,7 +7,10 @@ import os
 from controllers.account import bp_app as account
 from flask import Flask
 from application import application
+import asyncio
+
 from pickle import FALSE
+from application.XRPCronService import  main
 from dotenv import load_dotenv
 load_dotenv()
 application.register_blueprint(account)
@@ -54,12 +57,12 @@ try:
 
     if arg_2 == "service":
         print("starting service in provider mode")
-        print("Initiating the ETH Ingestion Service")
-        ETHCronService.main()
-        print("Initiating the CELO Ingestion Service")
-        CELOCronService.main()
+        # print("Initiating the ETH Ingestion Service")
+        # ETHCronService.main()
+        # print("Initiating the CELO Ingestion Service")
+        # CELOCronService.main()
         print("Initiating the XRP Ingestion Service")
-        XRPCronService.main()
+        asyncio.run(main())
 
     elif arg_2 == "client":
         print("starting service in client mode")

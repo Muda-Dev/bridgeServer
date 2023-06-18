@@ -16,7 +16,8 @@ The server is capable of:
 The server supports multiple blockchains, including;
 1. [CELO](https://celo.org/)
 2. [ETHEREUM](https://ethereum.org/en/)
-3. [XRP](https://xrpl.org/).
+3. [XRP](https://xrpl.org/)
+
 Your can set a default chain use in the `.env` file or set it to 0 to support all chains.
 
 ## Downloading the Server

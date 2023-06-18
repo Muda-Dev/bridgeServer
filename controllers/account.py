@@ -9,9 +9,9 @@ bp_app = Blueprint('account', __name__)
 def index():
     return md.make_response(403, "Not allowed")
 
-@bp_app.route("/account/create-key", methods=["GET"])
+@bp_app.route("/account/create-key", methods=["POST"])
 def generate_keypair():
-    return Account().generate_keypair()
+    return Account().generate_keypair(request)
 
 @bp_app.route("/account/<account_id>", methods=["GET"])
 def account_balance(account_id):

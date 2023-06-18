@@ -1,56 +1,87 @@
-import os
 import asyncio
-import ssl
+import websockets
+import json
+import os
 from dotenv import load_dotenv
-from xrpl.clients import WebsocketClient
-from xrpl.models.transactions import Payment
-from xrpl.wallet import Wallet
-from xrpl.ledger import get_latest_validated_ledger_sequence
 
 load_dotenv()
 
-xrpl_ws = os.getenv("xrpl_ws")
-address = os.getenv("address")
-secretKey = os.getenv("secretKey")
-asset_issuer = os.getenv("asset_issuer")
-asset_code = os.getenv("asset_code")
+async def handler(websocket):
+    message = await websocket.recv()
+    return message
 
-test_wallet = Wallet(seed=secretKey, sequence=16237283)
+async def api_request(options, websocket):
+    try:
+        await websocket.send(json.dumps(options))
+        message = await websocket.recv()
+        return json.loads(message)
+    except Exception as e:
+        return e
 
-def process_received_data(payment: Payment):
-    # Process the received data here
-    print(f"Transaction: {payment}")
-    print(f"Amount: {payment.amount.value}")
-    print(f"Sender: {payment.account}")
-    print(f"Destination: {payment.destination}")
+async def pingpong(websocket):
+    command = {
+        "id": "on_open_ping_1",
+        "command": "ping"
+    }
+    value = await api_request(command, websocket)
+    print(value)
 
-    # For now, let's just print the transaction
-    print(payment)
+async def do_subscribe(websocket):
+    command = await api_request({
+        'command': 'subscribe',
+        'accounts': [os.getenv("address")]
+    }, websocket)
 
-async def handle_incoming_payment(payment: Payment):
-    if payment.destination == wallet.classic_address:
-        if payment.amount.currency == asset_code and payment.amount.issuer == asset_issuer:
-            process_received_data(payment)
+    if command.get('status') == 'success':
+        print('Successfully Subscribed!')
+    else:
+        print("Error subscribing: ", command)
+    print('Received message from server', await handler(websocket))
 
-async def listen_for_incoming_payments():
-    async with WebsocketClient(xrpl_ws) as client:
-        ledger_index = await get_latest_validated_ledger_sequence(client)
-        print(f"Listening for payments starting from ledger {ledger_index}")
-        while True:
-            response = await client.send({
-                "command": "subscribe",
-                "accounts": [wallet.classic_address],
-            })
-            for transaction in response['result']['transactions']:
-                if transaction['transaction']['TransactionType'] == 'Payment':
-                    payment = Payment.from_dict(transaction['transaction'])
-                    await handle_incoming_payment(payment)
+def onTransactionReceived(transaction):
+    # Extract transaction details
+    tx_type = transaction.get('type')
+    tx_from = transaction.get('account')
+    tx_to = transaction.get('destination')
+    tx_amount = transaction.get('amount')
+    tx_asset = transaction.get('currency')
+    tx_memo = transaction.get('memos')
 
-            ledger_index += 1
+    # Print transaction details
+    print("Received transaction:")
+    print(f"Type: {tx_type}")
+    print(f"From: {tx_from}")
+    print(f"To: {tx_to}")
+    print(f"Amount: {tx_amount}")
+    print(f"Asset: {tx_asset}")
+    print(f"Memo: {tx_memo}")
+    print("--------------------")
+    # send this to my service. TODO
+    return True
 
-async def main():
-    await listen_for_incoming_payments()
+async def run():
+    try:
+        websocket = await websockets.connect(os.getenv("xrpl_ws"))
+        try:
+            await pingpong(websocket)
+            await do_subscribe(websocket)
+            while True:
+                message = await handler(websocket)
+                transaction = json.loads(message)
+                onTransactionReceived(transaction)
+        except websockets.ConnectionClosed:
+            print('Disconnected...')
+        finally:
+            await websocket.close()
+    except websockets.WebSocketException as e:
+        print("WebSocket connection failed:", e)
+    except Exception as e:
+        print("An error occurred:", e)
 
-if __name__ == "__main__":
-    ssl._create_default_https_context = ssl._create_unverified_context
-    asyncio.run(main())
+def main():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(run())
+    print('WebSocket client finished.')
+
+if __name__ == '__main__':
+    main()
