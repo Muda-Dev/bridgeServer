@@ -1,21 +1,29 @@
 # Rail Bridge Server
-This is a stand alone server written in python. It is designed to make connecting to the celo network as easy as possible. 
-It allows you to be notified when a payment is received by a particular account. It also allows you to send a payment via a HTTP request.
-It can be used by any project that needs to accept or send payments such as client wallets or banks making payouts.
+This is a standalone server written in Python, designed to provide an easy interface to Web3 and XRP networks. It acts as a bridge between blockchain networks and any project that needs to handle blockchain transactions such as client wallets, banks, and payment processors. 
 
-Handles:
-- Creating web3 transactions.
-- Monitoring a celo based contracts.
+## Server Capabilities
+The server is capable of:
+- Creating and sending transactions on Web3 and XRP networks.
+- Monitoring transactions on specific Web3-based contracts.
+- Monitoring XRP asset transactions.
+- Creating accounts on supported blockchains.
+- Issuing and managing assets on the XRP network.
+- Checking account balances across supported blockchains.
+- Processing payments and transfers to merchants and individual accounts.
+- Listening and reacting to incoming transactions.
 
-## Service providers
-Providers are organisations/companies that offer end user services like money transfers, utiltiy payments like airtime, water payments etc. To send transactions as a client, you will need a service id. We keep an open list of all service providers [here](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/services.json).
-You can also access the services as a json endpoint [here](https://muda-dev.github.io/Liqudity-Rail/services.json).
+## Supported Block Chains
+The server supports multiple blockchains, including;
+1. [CELO](https://celo.org/)
+2. [ETHEREUM](https://ethereum.org/en/)
+3. [XRP](https://xrpl.org/)
 
+Your can set a default chain use in the `.env` file or set it to 0 to support all chains.
 
-## Downloading the server
-Prebuilt binaries of the rail-server server are available on the for easy donwload and execction.
+## Downloading the Server
+Prebuilt binaries of the Rail Bridge Server are available for easy download and execution.
 
-| Platform       | Binary file name                                                                         |
+| Platform       | Binary File Name                                                                         |
 |----------------|------------------------------------------------------------------------------------------|
 | Mac OSX 64 bit | [rail-darwin-amd64](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/mac.zip)      |
 | Linux 64 bit   | [rail-linux-amd64](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/mac.zip)       |
@@ -26,19 +34,29 @@ Alternatively, you can [build](#building) the binary yourself.
 
 The `.env` file must be present in a working directory. Here is an [example configuration file](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/example.env). env file should contain following values:
 
-* `port` - server listening port
-* `address` - this is the address that will be receiving payments
-* `pay_account_private_key` - This is your web3 private key that will be used to make out going payments.
+The `.env` file must be present in the working directory. Here is an [example configuration file](https://github.com/Muda-Dev/Liqudity-Rail/blob/main/release/example.env). env file should contain the following values:
+
+* `port` - Server listening port.
+* `address` - This is the address that will be receiving payments.
+* `pay_account_private_key` - This is your web3 private key that will be used to make outgoing payments.
 * `callback_url` - URL that will be called when a new payment has been received.
 * `webhook_url` - URL which will receive payment notifications from service providers once a transaction has been completed.
-* `currency` - currency that you transact in. Currently this is one of ugx and usd
+* `currency` - Currency that you transact in. Currently, this is one of UGX, USD, EUR, etc.
+* `default_currency` - Default currency used for transactions. This is one of UGX, USD, EUR, etc.
+* `default_chain` - Default blockchain used for transactions. This is one of CELO, ETHEREUM, XRP, etc.
 * `database`
-  * `HOST_NAME` - by default it's localhost
-  * `USER_NAME` - your database username
-  * `PASSWORD` - your database password
-  * `DBNAME` - your database name
-* `mode` - this is one of [dev,test,live] this setting tells which network the service is going to use
-* `enc_key` - encryption key that will be used to sign your callbacks
+  * `HOST_NAME` - By default, it's localhost.
+  * `USER_NAME` - Your database username.
+  * `PASSWORD` - Your database password.
+  * `DBNAME` - Your database name.
+* `mode` - This is one of [dev,test,live]. This setting tells which network the service is going to use.
+* `enc_key` - Encryption key that will be used to sign your callbacks.
+* `XRP` - Details for XRP network.
+  * `XRP_address` - The XRP address for receiving payments.
+  * `XRP_secret` - The secret key for the XRP address.
+* `asset_issuer` - The issuer of the asset (For example, in the Stellar network).
+* `asset_code` - The code of the asset issued.
+* `supported_currencies` - List of supported currencies. This should be a comma-separated string of currency codes.
 
 ## Getting started
 
@@ -63,10 +81,20 @@ Creates a new random key pair.
 #### Response
 
 ```json
-{
-    "address": "0x4ABC37F4E8147e4b06F39ff43114fA14faC4e530",
-    "privateKey": "0x15da03f249e20eb80690eacf46bd13a32875fbc9992eb2700776e3e7e1eefb1a"
-}
+[
+    {
+        "EVM": {
+            "address": "0x841d0DE13f5c154CbfF616b00020A9B419b145de",
+            "privateKey": "0xe3b5921f99dcf2636af58578d8ffb95bae30b6d33843aca137a5a5da66181b54"
+        }
+    },
+    {
+        "XRP": {
+            "classic_address": "r4gc1C95hGRJbFYA78QmrKqv5Vv8e3Unop",
+            "seed": "sEdV3ReWzgqeqEMsgbTcCsrgT97EgW7"
+        }
+    }
+]
 ```
 
 ### POST /payment

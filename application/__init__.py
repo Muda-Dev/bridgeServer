@@ -2,10 +2,12 @@ from flask import Flask, redirect, request, url_for, render_template
 from flask_mysqldb import MySQL
 import os
 from web3 import Web3
-from config import config as cfg
+from helpers.config import rpc_endpoints
 
-rpc_endpoint = cfg['rpc_endpoint']
-web3 = Web3(Web3.HTTPProvider(rpc_endpoint))
+eth_rpc_url = rpc_endpoints["ETH"]["url"]
+celo_rpc_url = rpc_endpoints["CELO"]["url"]
+web3 = Web3(Web3.HTTPProvider(eth_rpc_url))
+Maticweb3 = Web3(Web3.HTTPProvider(celo_rpc_url))
 
 
 application = Flask(__name__)

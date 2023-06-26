@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 import os
 import urllib3
 import requests
-from config import config as cfg
+from helpers.contracts import config as cfg
 
 
 class Modal:
