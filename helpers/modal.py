@@ -65,15 +65,22 @@ class Modal:
     ):
         
         currency = "UGX"
-        # payout_amount = make_exchange(asset_amount, asset_code, currency)
-        # if not payout_amount:
-            # Handling cases where exchange rate couldn't be fetched or calculation failed
-            # print("Failed to calculate payout amount.")
-            # return None
+        asset_amount = float(asset_amount)
 
+        print({transId, asset_amount, asset_code})
+        payout_amount = make_exchange(asset_amount, asset_code, currency)
+        if not payout_amount:
+            # Handling cases where exchange rate couldn't be fetched or calculation failed
+            print("Failed to calculate payout amount.")
+            return None
+
+        payout_amount = 500
         payload = {
             "hash": id,
-            "transId":transId
+            "transId":transId,
+            "payout_amount":round(payout_amount),
+            "asset_amount":asset_amount,
+            "asset_code":asset_code
         }
 
         # Convert payload to JSON
