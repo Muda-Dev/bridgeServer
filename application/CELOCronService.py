@@ -34,7 +34,7 @@ def save_last_processed_block_number(block_number):
 
 def handle_event(event, currency):
     try:
-        print("..received a new event\n")
+        print("Received a new transaction\n")
         print(event)
         call_back_url = os.getenv("callback_url")
         data_1 = Web3.toJSON(event)
@@ -73,10 +73,13 @@ def process_received_data(args, amount, currency, call_back_url, hash):
 
 async def log_loop(event_filter, poll_interval, currency):
     last_processed_block = load_last_processed_block_number()
+    print("last processed block ",last_processed_block )
 
     while True:
         try:
             current_block_number = web3.eth.block_number
+            print("listening for transactions is block ",current_block_number )
+
             if last_processed_block < current_block_number:
                 for block_number in range(last_processed_block + 1, current_block_number + 1):
                     try:
@@ -103,14 +106,15 @@ def main():
     event_filters = []
     for currency in supported_currencies:
         contract_address = currency['contract_address']
-        contract_abi = currency['abiFile']
+        print("contract address", contract_address)
+        contract_abi = currency['abiFile']['abi']
         contract = web3.eth.contract(address=contract_address, abi=contract_abi)
         event_filter = contract.events.Pay.createFilter(fromBlock='latest')
         event_filters.append((event_filter, currency))
 
     loop = asyncio.get_event_loop()
     try:
-        tasks = [log_loop(event_filter, 2, currency) for event_filter, currency in event_filters]
+        tasks = [log_loop(event_filter, 1, currency) for event_filter, currency in event_filters]
         loop.run_until_complete(asyncio.gather(*tasks))
     finally:
         loop.close()

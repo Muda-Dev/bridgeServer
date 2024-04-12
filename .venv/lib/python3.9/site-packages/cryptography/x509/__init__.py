@@ -2,8 +2,9 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
-from cryptography.x509 import certificate_transparency
+from cryptography.x509 import certificate_transparency, verification
 from cryptography.x509.base import (
     Attribute,
     AttributeNotFound,
@@ -22,6 +23,7 @@ from cryptography.x509.base import (
     load_der_x509_crl,
     load_der_x509_csr,
     load_pem_x509_certificate,
+    load_pem_x509_certificates,
     load_pem_x509_crl,
     load_pem_x509_csr,
     random_serial_number,
@@ -31,19 +33,19 @@ from cryptography.x509.extensions import (
     AuthorityInformationAccess,
     AuthorityKeyIdentifier,
     BasicConstraints,
+    CertificateIssuer,
+    CertificatePolicies,
     CRLDistributionPoints,
     CRLNumber,
     CRLReason,
-    CertificateIssuer,
-    CertificatePolicies,
     DeltaCRLIndicator,
     DistributionPoint,
     DuplicateExtension,
     ExtendedKeyUsage,
     Extension,
     ExtensionNotFound,
-    ExtensionType,
     Extensions,
+    ExtensionType,
     FreshestCRL,
     GeneralNames,
     InhibitAnyPolicy,
@@ -51,14 +53,16 @@ from cryptography.x509.extensions import (
     IssuerAlternativeName,
     IssuingDistributionPoint,
     KeyUsage,
+    MSCertificateTemplate,
     NameConstraints,
     NoticeReference,
+    OCSPAcceptableResponses,
     OCSPNoCheck,
     OCSPNonce,
     PolicyConstraints,
     PolicyInformation,
-    PrecertPoison,
     PrecertificateSignedCertificateTimestamps,
+    PrecertPoison,
     ReasonFlags,
     SignedCertificateTimestamps,
     SubjectAlternativeName,
@@ -70,13 +74,13 @@ from cryptography.x509.extensions import (
     UserNotice,
 )
 from cryptography.x509.general_name import (
-    DNSName,
     DirectoryName,
+    DNSName,
     GeneralName,
     IPAddress,
     OtherName,
-    RFC822Name,
     RegisteredID,
+    RFC822Name,
     UniformResourceIdentifier,
     UnsupportedGeneralNameType,
 )
@@ -87,15 +91,14 @@ from cryptography.x509.name import (
 )
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
-    CRLEntryExtensionOID,
     CertificatePoliciesOID,
+    CRLEntryExtensionOID,
     ExtendedKeyUsageOID,
     ExtensionOID,
     NameOID,
     ObjectIdentifier,
     SignatureAlgorithmOID,
 )
-
 
 OID_AUTHORITY_INFORMATION_ACCESS = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 OID_AUTHORITY_KEY_IDENTIFIER = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
@@ -168,13 +171,16 @@ OID_OCSP = AuthorityInformationAccessOID.OCSP
 
 __all__ = [
     "certificate_transparency",
+    "verification",
     "load_pem_x509_certificate",
+    "load_pem_x509_certificates",
     "load_der_x509_certificate",
     "load_pem_x509_csr",
     "load_der_x509_csr",
     "load_pem_x509_crl",
     "load_der_x509_crl",
     "random_serial_number",
+    "verification",
     "Attribute",
     "AttributeNotFound",
     "Attributes",
@@ -195,6 +201,7 @@ __all__ = [
     "IssuingDistributionPoint",
     "TLSFeature",
     "TLSFeatureType",
+    "OCSPAcceptableResponses",
     "OCSPNoCheck",
     "BasicConstraints",
     "CRLNumber",
@@ -246,4 +253,5 @@ __all__ = [
     "SignedCertificateTimestamps",
     "SignatureAlgorithmOID",
     "NameOID",
+    "MSCertificateTemplate",
 ]

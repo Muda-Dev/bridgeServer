@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/mac2017/work/muda/bridgeServer/.venv"
+VIRTUAL_ENV="/Users/mac2017/work/muda/Liqudity-Rail/bridgeServer/.venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

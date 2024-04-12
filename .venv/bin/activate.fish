@@ -29,7 +29,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/mac2017/work/muda/bridgeServer/.venv"
+set -gx VIRTUAL_ENV "/Users/mac2017/work/muda/Liqudity-Rail/bridgeServer/.venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
