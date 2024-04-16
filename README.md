@@ -43,7 +43,7 @@ The `.env` file must be present in the working directory. Here is an [example co
 * `webhook_url` - URL which will receive payment notifications from service providers once a transaction has been completed.
 * `currency` - Currency that you transact in. Currently, this is one of UGX, USD, EUR, etc.
 * `default_currency` - Default currency used for transactions. This is one of UGX, USD, EUR, etc.
-* `default_chain` - Default blockchain used for transactions. This is one of CELO, ETHEREUM, XRP, etc.
+* `default_chain` - Default blockchain used for transactions. This is one of CELO, ETHEREUM, Stellar, XRP, etc.
 * `database`
   * `HOST_NAME` - By default, it's localhost.
   * `USER_NAME` - Your database username.
