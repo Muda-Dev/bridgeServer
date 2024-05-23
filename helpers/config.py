@@ -28,9 +28,9 @@ rpc_endpoints = {
         "chain_id": 44787,
         "supportedCurrencies": [
             {
-                "asset": "CUGX",
+                "asset": "CUSD",
                 "contract_address": "0x82532B034275CFf660044a0728b5d91Bad1704d1",
-                "abiFile": cfg['celo_cugx']
+                "abiFile": cfg['celo_cusd']
             }
 
         ]

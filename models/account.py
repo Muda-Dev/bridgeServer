@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import traceback
 from flask import jsonify
 import requests
 import os
@@ -22,9 +23,12 @@ class BlockchainInterface(ABC):
     def get_transaction(self, hash):
         pass
 
+
 class StellarBlockchain(BlockchainInterface):
     def __init__(self):
-        self.stellar = StellarLedger()  # Assuming StellarLedger is imported and available
+        self.stellar = (
+            StellarLedger()
+        )  # Assuming StellarLedger is imported and available
 
     def generate_keypair(self):
         public_key, secret = self.stellar.generate_key_pair()
@@ -57,7 +61,7 @@ class EVMBlockchain(BlockchainInterface):
 
 class XRPBlockchain(BlockchainInterface):
     def __init__(self):
-        self.xrp = None #XRPLedger()
+        self.xrp = None  # XRPLedger()
 
     def generate_keypair(self):
         classic_address, seed = self.xrp.generate_key_pair()
@@ -72,7 +76,11 @@ class XRPBlockchain(BlockchainInterface):
 
 class BlockchainFactory:
     def get_blockchain(self, blockchain_name):
-        blockchains = {"EVM": EVMBlockchain, "XRP": XRPBlockchain, "XLM": StellarBlockchain}
+        blockchains = {
+            "EVM": EVMBlockchain,
+            "XRP": XRPBlockchain,
+            "XLM": StellarBlockchain,
+        }
 
         blockchain = blockchains.get(blockchain_name.upper())
         if not blockchain:
@@ -85,11 +93,26 @@ class Account:
         self.blockchain_factory = BlockchainFactory()
 
     def generate_keypair(self, request):
-        data = request.json
-        blockchain_name = data["chain"]
-        blockchain_instance = self.blockchain_factory.get_blockchain(blockchain_name)
-        return blockchain_instance.generate_keypair()
-
+        try:
+            data = request.json
+            print(data)
+            blockchain_name = data["chain"]
+            blockchain_instance = self.blockchain_factory.get_blockchain(
+                blockchain_name
+            )
+            keypair = blockchain_instance.generate_keypair()
+            if data["chain"] == "EVM":
+                address = keypair['address']
+                privateKey = keypair['privateKey']
+                obj = {"address": address,"seed": privateKey}
+                Db().insert("addresses", **obj)
+            return keypair
+        except Exception as e:
+            print("An error occurred:", e)
+            traceback.print_exc()
+            return {}
+            
+            
     def get_balance(self, request):
         data = request.json
         address = data["address"]

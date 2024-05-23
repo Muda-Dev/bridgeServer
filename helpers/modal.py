@@ -63,6 +63,8 @@ class Modal:
     def payout_callback(
         id, address, transId, asset_amount, asset_code, asset_issuer, chain
     ):
+        asset_code = asset_code.upper()
+        print(id, address, transId, asset_amount, asset_code, asset_issuer, chain)
         
         currency = "UGX"
         asset_amount = float(asset_amount)
@@ -74,7 +76,6 @@ class Modal:
             print("Failed to calculate payout amount.")
             return None
 
-        payout_amount = 500
         payload = {
             "hash": id,
             "transId":transId,
@@ -85,14 +86,13 @@ class Modal:
 
         # Convert payload to JSON
         payload_json = json.dumps(payload)
-        print("Payload:", payload_json)
         payout_url = os.getenv("PAYOUT_URL")
         headers = {"Content-Type": "application/json"}
+        print("sending call back to :", payout_url, payload_json)
         response = requests.post(payout_url, headers=headers, data=payload_json)
 
         # Log the response for debugging purposes
         print(f"Webhook Response Status: {response.status_code}, Body: {response.text}")
-
         return response
 
     # Assuming other methods remain unchanged...

@@ -1,7 +1,6 @@
 import os
 import sys
 import asyncio
-
 from dotenv import load_dotenv
 from waitress import serve
 from flask import Flask
@@ -46,17 +45,8 @@ def start_app():
         arg_2 = "client" if arg_count <= 2 else args[2]
 
         if arg_2 == "service":
-            arg_3 = args[3]
-            if arg_3 == 'celo':
-                print("starting service in provider mode")
-                print("Initiating the CELO Ingestion Service")
-                CELOCronService.main()
-            elif arg_3 == "xlm":
-                print("Initiating the Stellar Ingestion Service")
-                asyncio.run(xlm_main())
-            else:
-                print("running on ETH chain")
-                ETHCronService.main()
+            print("starting service in provider mode")
+            asyncio.run(run_services())
         elif arg_2 == "client":
             print("starting service in client mode")
             print(f"app started on port {os.environ.get('PORT')}")
@@ -72,6 +62,12 @@ def start_app():
         print("An exception was thrown, make sure you have the correct arguments")
         print(e)
         sys.exit()
+
+async def run_services():
+    await asyncio.gather(
+        asyncio.to_thread(CELOCronService.main),
+        # xlm_main()
+    )
 
 if __name__ == "__main__":
     start_app()
