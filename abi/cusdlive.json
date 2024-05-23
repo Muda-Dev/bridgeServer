@@ -97,7 +97,7 @@
         "name": "version",
         "outputs": [
             {
-                "name": "",
+                "name",
                 "type": "string"
             }
         ],
@@ -107,15 +107,16 @@
     },
     {
         "constant": true,
-        "inputs": [],
-        "name": "balanceOf",
-        "outputs": [
+        "inputs": [
             {
                 "name": "account",
                 "type": "address"
-            },
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
             {
-                "name": "balance",
+                "name": "",
                 "type": "uint256"
             }
         ],
@@ -154,25 +155,6 @@
             {
                 "name": "",
                 "type": "string"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "balanceOf",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
             }
         ],
         "payable": false,
@@ -226,60 +208,8 @@
         "type": "function"
     },
     {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_from",
-                "type": "address"
-            },
-            {
-                "name": "_to",
-                "type": "address"
-            },
-            {
-                "name": "_value",
-                "type": "uint256"
-            }
-        ],
-        "name": "transferFrom",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "name": "value",
-                "type": "uint256"
-            }
-        ],
-        "name": "approve",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
         "constant": true,
-        "inputs": [],
-        "name": "allowance",
-        "outputs": [
+        "inputs": [
             {
                 "name": "owner",
                 "type": "address"
@@ -287,9 +217,12 @@
             {
                 "name": "spender",
                 "type": "address"
-            },
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
             {
-                "name": "remaining",
+                "name": "",
                 "type": "uint256"
             }
         ],
@@ -314,39 +247,6 @@
         ],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "burn",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "burner",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -416,10 +316,6 @@
             },
             {
                 "name": "_totalSupply",
-                "type": "uint256"
-            },
-            {
-                "name": "_initialBalance",
                 "type": "uint256"
             }
         ],

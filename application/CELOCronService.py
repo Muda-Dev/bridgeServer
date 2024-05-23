@@ -17,9 +17,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Determine which environment to load
-env = os.getenv('ENV', 'stage')  # Default to 'stage' if not specified
+env = os.getenv('ENV', 'prod')  # Default to 'stage' if not specified
 env_file = f'{env}.env'
-load_dotenv(env_file)
+# load_dotenv(env_file)
 
 # Connection to Celo network
 provider_url = os.getenv("CELO_PROVIDER_URL")

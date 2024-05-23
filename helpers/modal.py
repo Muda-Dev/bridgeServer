@@ -79,7 +79,9 @@ class Modal:
             "transId":transId,
             "payout_amount":round(payout_amount),
             "asset_amount":asset_amount,
-            "asset_code":asset_code
+            "asset_code":asset_code,
+            "contract_address":asset_issuer,
+            "chain":chain
         }
 
         # Convert payload to JSON
