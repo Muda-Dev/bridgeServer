@@ -66,7 +66,7 @@ def start_app():
 async def run_services():
     await asyncio.gather(
         asyncio.to_thread(CELOCronService.main),
-        # xlm_main()
+        xlm_main()
     )
 
 if __name__ == "__main__":
