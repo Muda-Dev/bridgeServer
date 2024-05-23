@@ -64,8 +64,6 @@ class Modal:
         id, address, transId, asset_amount, asset_code, asset_issuer, chain
     ):
         asset_code = asset_code.upper()
-        print(id, address, transId, asset_amount, asset_code, asset_issuer, chain)
-        
         currency = "UGX"
         asset_amount = float(asset_amount)
 
@@ -88,11 +86,13 @@ class Modal:
         payload_json = json.dumps(payload)
         payout_url = os.getenv("PAYOUT_URL")
         headers = {"Content-Type": "application/json"}
-        print("sending call back to :", payout_url, payload_json)
+        print("sending request to ",payout_url, payload_json)
+
         response = requests.post(payout_url, headers=headers, data=payload_json)
 
         # Log the response for debugging purposes
         print(f"Webhook Response Status: {response.status_code}, Body: {response.text}")
+
         return response
 
     # Assuming other methods remain unchanged...
