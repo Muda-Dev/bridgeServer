@@ -1,13 +1,13 @@
 # Rail Bridge Server
-This is a standalone server written in Python, designed to provide an easy interface to Web3 and XRP networks. It acts as a bridge between blockchain networks and any project that needs to handle blockchain transactions such as client wallets, banks, and payment processors. 
+This is a standalone server written in Python, designed to provide an easy interface to Web chains [ETH,CELO,BNB], Stellar and XRP networks. It acts as a bridge between blockchain networks and any project that needs to handle blockchain transactions such as client wallets, banks, and payment processors. 
 
 ## Server Capabilities
 The server is capable of:
-- Creating and sending transactions on Web3 and XRP networks.
+- Creating and sending transactions on Web3 , stellar and XRP networks.
 - Monitoring transactions on specific Web3-based contracts.
 - Monitoring XRP asset transactions.
 - Creating accounts on supported blockchains.
-- Issuing and managing assets on the XRP network.
+- Issuing and managing assets on the stellar and XRP network.
 - Checking account balances across supported blockchains.
 - Processing payments and transfers to merchants and individual accounts.
 - Listening and reacting to incoming transactions.
@@ -17,6 +17,8 @@ The server supports multiple blockchains, including;
 1. [CELO](https://celo.org/)
 2. [ETHEREUM](https://ethereum.org/en/)
 3. [XRP](https://xrpl.org/)
+4. 3. [XRP](https://staller.org/)
+
 
 Your can set a default chain use in the `.env` file or set it to 0 to support all chains.
 
