@@ -9,6 +9,7 @@ from helpers.config import version
 from application import application, ETHCronService, CELOCronService
 from application.XRPCronService import main as xrp_main
 from application.StellarService import main as xlm_main
+from application.TronHelperService import main as tron
 from controllers.account import bp_app as account
 
 load_dotenv()
@@ -65,8 +66,9 @@ def start_app():
 
 async def run_services():
     await asyncio.gather(
-        asyncio.to_thread(CELOCronService.main),
-        xlm_main()
+        # asyncio.to_thread(CELOCronService.main),
+        # xlm_main(),
+        tron()
     )
 
 if __name__ == "__main__":

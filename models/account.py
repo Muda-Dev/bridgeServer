@@ -8,6 +8,9 @@ from helpers.StellarLedger import StellarLedger
 from helpers.dbhelper import Database as Db
 from helpers.modal import Modal as Md
 from helpers.config import service_url
+from tronpy.keys import PrivateKey
+from tronpy import Tron
+from tronpy.providers import HTTPProvider
 
 
 class BlockchainInterface(ABC):
@@ -23,6 +26,23 @@ class BlockchainInterface(ABC):
     def get_transaction(self, hash):
         pass
 
+class TRONBlockchain(BlockchainInterface):
+    def __init__(self):
+        self.tron = Tron(HTTPProvider(api_key=os.getenv("c7ecb219-8949-447f-816a-d28aa562e303")))
+
+    def generate_keypair(self):
+        private_key = PrivateKey.random()
+        public_address = private_key.public_key.to_base58check_address()
+        print(f"Private Key: {private_key.hex()}")
+        print(f"Public Address: {public_address}")
+        return {"address": public_address, "privateKey": private_key.hex()}
+
+ 
+    def get_balance(self, address):
+        return self.tron.get_account_balance(address)
+
+    def get_transaction(self, hash):
+        return self.tron.get_transaction(hash)
 
 class StellarBlockchain(BlockchainInterface):
     def __init__(self):
@@ -77,9 +97,11 @@ class XRPBlockchain(BlockchainInterface):
 class BlockchainFactory:
     def get_blockchain(self, blockchain_name):
         blockchains = {
-            "EVM": EVMBlockchain,
+            "ETH": EVMBlockchain,
+            "CELO": EVMBlockchain,
             "XRP": XRPBlockchain,
             "XLM": StellarBlockchain,
+            "TRX": TRONBlockchain,
         }
 
         blockchain = blockchains.get(blockchain_name.upper())
@@ -101,10 +123,10 @@ class Account:
                 blockchain_name
             )
             keypair = blockchain_instance.generate_keypair()
-            if data["chain"] == "EVM":
+            if blockchain_name in ["ETH","CELO", "TRX"]:
                 address = keypair['address']
                 privateKey = keypair['privateKey']
-                obj = {"address": address,"seed": privateKey}
+                obj = {"address": address,"seed": privateKey,"chain":blockchain_name}
                 Db().insert("addresses", **obj)
             return keypair
         except Exception as e:
