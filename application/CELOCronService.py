@@ -16,7 +16,7 @@ from helpers.dbhelper import Database as Db
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger(__name__)
+celo_logger = logging.getLogger(__name__)
 
 # load_dotenv(env_file)
 
@@ -68,7 +68,7 @@ def get_payment_addresses():
 
 # Event processing
 def handle_event(event, currency):
-    logger.info("Received a new event: %s")
+    celo_logger.info("Step 1: Received a new event.")
 
     # Decode the event using the contract ABI
     contract = web3.eth.contract(
@@ -76,29 +76,55 @@ def handle_event(event, currency):
     )
     transfer_event_abi = contract.events.Transfer._get_event_abi()
     try:
+        celo_logger.info("Step 2: Decoding the event using ABI.")
         decoded_event = get_event_data(web3.codec, transfer_event_abi, event)
-        # logger.info("Decoded event: %s", decoded_event)
+        celo_logger.info("Step 3: Event decoded successfully.")
+
         transaction_hash = decoded_event["transactionHash"]
         args = decoded_event["args"]
+
+        celo_logger.info("Step 4: Extracted transaction hash: %s", transaction_hash.hex())
+        celo_logger.info("Step 5: Extracted event arguments: %s", args)
+
         amount = args.get("value")
         to_address = args["to"]
-        print("paymen to", to_address)
+
+        celo_logger.info("Step 6: Extracted amount: %s", amount)
+        celo_logger.info("Step 7: Extracted recipient address: %s", to_address)
 
         payment_addresses = get_payment_addresses()
+        celo_logger.info("Step 8: Retrieved payment addresses: %s", payment_addresses)
+
         if to_address in payment_addresses:
+            celo_logger.info("Step 9: Recipient address is in monitored addresses.")
             process_received_data(args, amount, currency, transaction_hash)
+        else:
+            celo_logger.info("Step 10: Recipient address not in monitored addresses: %s", to_address)
+
         return True
     except Exception as e:
-        logger.error("Failed to decode event: %s", e)
+        celo_logger.error("Failed to decode event: %s", e)
+        traceback.print_exc()
         return False
 
 
 def process_received_data(args, amount, currency, transaction_hash):
     try:
-        logger.info("Processing transaction: %s", transaction_hash.hex())
+        celo_logger.info("Processing transaction: %s", transaction_hash.hex())
         from_address = args["from"]
         to_address = args["to"]
         asset_amount = amount / (10 ** currency["decimals"])
+
+        # Log the transaction details
+        celo_logger.info("Transaction details:")
+        celo_logger.info("Transaction Hash: %s", transaction_hash.hex())
+        celo_logger.info("From Address: %s", from_address)
+        celo_logger.info("To Address: %s", to_address)
+        celo_logger.info("Asset Amount: %.6f", asset_amount)
+        celo_logger.info("Currency Code: %s", currency["code"])
+        celo_logger.info("Contract Address: %s", currency["contract_address"])
+        celo_logger.info("Network: celo")
+
         md.payout_callback(
             transaction_hash.hex(),
             to_address,
@@ -110,23 +136,23 @@ def process_received_data(args, amount, currency, transaction_hash):
         )
         return True
     except Exception as e:
-        logger.error("Error: %s", e)
+        celo_logger.error("Error while processing transaction: %s", e)
         traceback.print_exc()
 
 
 # Main event loop
 async def log_loop(event_filter, poll_interval, currency):
     last_seen_block = load_last_seen_block_number()
-    logger.info("Last checked block: %s", last_seen_block)
+    celo_logger.info("Last checked block: %s", last_seen_block)
 
     while True:
         try:
             current_block_number = web3.eth.block_number
-            logger.info("Current block number: %s", current_block_number)
+            celo_logger.info("Current block number: %s", current_block_number)
 
             for block_number in range(last_seen_block + 1, current_block_number + 1):
                 try:
-                    logger.info("Checking block: %s", block_number)
+                    celo_logger.info("Checking block: %s", block_number)
                     block = web3.eth.get_block(block_number, full_transactions=True)
                     for transaction in block.transactions:
                         receipt = web3.eth.get_transaction_receipt(transaction.hash)
@@ -144,15 +170,15 @@ async def log_loop(event_filter, poll_interval, currency):
 
             await asyncio.sleep(poll_interval)
         except KeyboardInterrupt:
-            logger.info("Interrupted by user, stopping...")
+            celo_logger.info("Interrupted by user, stopping...")
             break
         except Exception as e:
-            logger.error("An error occurred: %s", e)
+            celo_logger.error("An error occurred: %s", e)
             traceback.print_exc()
 
 
 def main():
-    logger.info("Starting ingestion for the Celo contract")
+    celo_logger.info("Starting ingestion for the Celo contract")
     last_seen_block = load_last_seen_block_number()
     event_filters = []
     for currency in supported_currencies:
