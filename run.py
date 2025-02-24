@@ -29,7 +29,7 @@ celo_logger = logging.getLogger("celo_service")
 stellar_logger = logging.getLogger("stellar_service")
 
 # Dynamically set logging levels
-selected_service = os.getenv("SERVICE", "bsc").lower()  # Default to "all"
+selected_service = os.getenv("SERVICE", "all").lower()  # Default to "all"
 
 if selected_service == "tron":
     tron_logger.setLevel(logging.DEBUG)
