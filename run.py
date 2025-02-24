@@ -11,6 +11,7 @@ from application import application, ETHCronService, CELOCronService
 from application.XRPCronService import main as xrp_main
 from application.StellarService import main as xlm_main
 from application.TronHelperService import main as tron
+from application.BSCService import main as bsc
 from controllers.account import bp_app as account
 
 # Load environment variables
@@ -28,7 +29,7 @@ celo_logger = logging.getLogger("celo_service")
 stellar_logger = logging.getLogger("stellar_service")
 
 # Dynamically set logging levels
-selected_service = os.getenv("SERVICE", "all").lower()  # Default to "all"
+selected_service = os.getenv("SERVICE", "bsc").lower()  # Default to "all"
 
 if selected_service == "tron":
     tron_logger.setLevel(logging.DEBUG)
@@ -111,6 +112,8 @@ async def run_services():
     if selected_service in ("all", "stellar"):
         stellar_logger.info("Starting Stellar Service")
         services.append(asyncio.to_thread(xlm_main))
+    if selected_service in ("all", "bsc"):
+        services.append(asyncio.to_thread(bsc))
 
     if not services:
         logger.warning("No valid services selected to run. Exiting.")
