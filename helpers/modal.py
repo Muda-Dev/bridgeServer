@@ -79,10 +79,12 @@ class Modal:
         payload = {
             "hash": id,
             "transId":transId,
+            "from_address":transId,
             "payout_amount":round(payout_amount),
             "payout_currency":currency,
             "asset_amount":asset_amount,
             "asset_code":asset_code,
+            "to_address":address,
             "contract_address":asset_issuer,
             "chain":chain
         }
