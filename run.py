@@ -10,10 +10,11 @@ from helpers.config import version
 from application import application, ETHCronService, CELOCronService
 from application.XRPCronService import main as xrp_main
 from application.StellarService import main as xlm_main
+
 from application.TronHelperService import main as tron
 from application.BSCService import main as bsc
 from controllers.account import bp_app as account
-
+from application.BantuService import main as bantu
 # Load environment variables
 load_dotenv()
 application.register_blueprint(account)
@@ -27,9 +28,10 @@ logging.basicConfig(
 tron_logger = logging.getLogger("tron_service")
 celo_logger = logging.getLogger("celo_service")
 stellar_logger = logging.getLogger("stellar_service")
+bantu_logger = logging.getLogger("bantu_service")
 
 # Dynamically set logging levels
-selected_service = os.getenv("SERVICE", "all").lower()  # Default to "all"
+selected_service = os.getenv("SERVICE", "bantu").lower()  # Default to "all"
 
 if selected_service == "tron":
     tron_logger.setLevel(logging.DEBUG)
@@ -114,7 +116,8 @@ async def run_services():
         services.append(asyncio.to_thread(xlm_main))
     if selected_service in ("all", "bsc"):
         services.append(asyncio.to_thread(bsc))
-
+    if selected_service in ("all", "bantu"):
+        services.append(asyncio.to_thread(bantu))
     if not services:
         logger.warning("No valid services selected to run. Exiting.")
         return
