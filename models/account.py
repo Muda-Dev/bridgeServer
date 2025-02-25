@@ -99,6 +99,7 @@ class BlockchainFactory:
         blockchains = {
             "ETH": EVMBlockchain,
             "CELO": EVMBlockchain,
+            "BSC": EVMBlockchain,
             "XRP": XRPBlockchain,
             "XLM": StellarBlockchain,
             "TRX": TRONBlockchain,
@@ -117,13 +118,17 @@ class Account:
     def generate_keypair(self, request):
         try:
             data = request.json
-            print(data)
+            print("here",data)
             blockchain_name = data["chain"]
+            chain_info = self.get_provider_addresses(blockchain_name)
+            print("Chain Info:", chain_info)
+            if chain_info:
+                return {"address": chain_info[0]['address'], "seed": chain_info[0]['private_key'], "chain": blockchain_name,"memo": chain_info[0]['memo']}
             blockchain_instance = self.blockchain_factory.get_blockchain(
                 blockchain_name
             )
             keypair = blockchain_instance.generate_keypair()
-            if blockchain_name in ["ETH","CELO", "TRX"]:
+            if blockchain_name in ["ETH","CELO", "TRX","BSC"]:
                 address = keypair['address']
                 privateKey = keypair['privateKey']
                 obj = {"address": address,"seed": privateKey,"chain":blockchain_name}
@@ -294,6 +299,13 @@ class Account:
             "amount": data["amount"],
         }
         return Md.make_response(100, message)
+
+    def get_provider_addresses(self, chain):
+        query = "SELECT * FROM provider_addresses WHERE chain = %s"
+        result = Db().select(query, (chain))
+        if result:
+            return result
+        return {}
 
     def get_service(service_id, chain):
         url = service_url
