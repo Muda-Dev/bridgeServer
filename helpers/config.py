@@ -28,15 +28,10 @@ rpc_endpoints = {
         "chain_id": 44787,
         "supportedCurrencies": [
             {
-                "asset": "CUGX",
+                "asset": "CUSD",
                 "contract_address": "0x82532B034275CFf660044a0728b5d91Bad1704d1",
-                "abiFile": cfg['celo_cugx']
-            },
-            {
-                "asset": "USDC",
-                "contract_address": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
                 "abiFile": cfg['celo_cusd']
-            },
+            }
 
         ]
     },
@@ -47,8 +42,8 @@ rpc_endpoints = {
         "chain_id": "",
         "supportedCurrencies": [
             {
-                "asset": "USDC",
-                "contract_address": "0x5678909875678",  # asset issuer
+                "asset": "xUGX",
+                "contract_address": "rUvSzZ81jtbTBwuMpBEExzQCooYL7xQfmj",  # asset issuer
                 "abiFile": ""
             }
         ]
