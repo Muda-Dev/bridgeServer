@@ -7,9 +7,12 @@ import threading
 from helpers.dbhelper import Database as Db
 from helpers.modal import Modal as md
 import asyncio
+import logging
+
 
 load_dotenv()
-
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+stellar_logger = logging.getLogger(__name__)
 # Initialize the server
 server = Server("https://horizon.stellar.org")
 
@@ -103,7 +106,7 @@ async def main():
     account_id = os.getenv("STELLAR_ACCOUNT_ID")
     if not account_id:
         stellar_logger.error("Please set the 'STELLAR_ACCOUNT_ID' environment variable.")
-        return
+        stellar_logger
 
     stellar_logger.info("Starting Stellar transaction listener asynchronously")
     await listen_for_transactions(account_id)

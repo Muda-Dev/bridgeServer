@@ -32,7 +32,7 @@ stellar_logger = logging.getLogger("stellar_service")
 bantu_logger = logging.getLogger("bantu_service")
 
 # Dynamically set logging levels
-selected_service = os.getenv("SERVICE", "bsc").lower()
+selected_service = os.getenv("SERVICE", "all").lower()
 
 if selected_service == "tron":
     tron_logger.setLevel(logging.DEBUG)
@@ -107,23 +107,23 @@ def start_app():
 async def run_services():
     services = []
 
-    if os.getenv("SERVICE", "all").lower() in ("all", "stellar"):
+    if selected_service in ("all", "stellar"):
         logger.info("Starting Stellar Service")
         services.append(asyncio.create_task(xlm_main()))
 
-    if os.getenv("SERVICE", "all").lower() in ("all", "bsc"):
+    if selected_service in ("all", "bsc"):
         logger.info("Starting BSC Service")
         services.append(asyncio.create_task(bsc()))
 
-    if os.getenv("SERVICE", "all").lower() in ("all", "celo"):
+    if selected_service in ("all", "celo"):
         logger.info("Starting Celo Service")
         services.append(asyncio.create_task(CELOCronService.main()))
 
-    if os.getenv("SERVICE", "all").lower() in ("all", "tron"):
+    if selected_service in ("all", "tron"):
         logger.info("Starting Tron Service")
         services.append(asyncio.create_task(tron()))
 
-    if os.getenv("SERVICE", "all").lower() in ("all", "bantu"):
+    if selected_service in ("all", "bantu"):
         logger.info("Starting Bantu Service")
         services.append(asyncio.create_task(bantu()))
 

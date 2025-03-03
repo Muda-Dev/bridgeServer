@@ -6,8 +6,12 @@ from dotenv import load_dotenv
 import threading
 from helpers.dbhelper import Database as Db
 from helpers.modal import Modal as md
+import logging
+
 
 load_dotenv()
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+stellar_logger = logging.getLogger(__name__)
 
 # Initialize the server
 server = Server("https://expansion.bantu.network")
