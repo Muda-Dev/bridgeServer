@@ -109,4 +109,6 @@ async def main():
         return
 
     stellar_logger.info("Starting Stellar transaction listener asynchronously")
-    await listen_for_transactions(account_id)
+    
+    # Ensure listen_for_transactions is async, otherwise run in a separate thread
+    await asyncio.to_thread(listen_for_transactions, account_id)
