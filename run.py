@@ -7,14 +7,14 @@ from waitress import serve
 from flask import Flask
 from helpers.dbhelper import Database as Db
 from helpers.config import version
-from application import application, ETHCronService, CELOCronService
+from application import application, CELOCronService
 from application.XRPCronService import main as xrp_main
 from application.StellarService import main as xlm_main
-
 from application.TronHelperService import main as tron
 from application.BSCService import main as bsc
 from controllers.account import bp_app as account
 from application.BantuService import main as bantu
+
 # Load environment variables
 load_dotenv()
 application.register_blueprint(account)
@@ -24,14 +24,15 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-# Create loggers for each service
+# Define loggers
+logger = logging.getLogger("run_services")
 tron_logger = logging.getLogger("tron_service")
 celo_logger = logging.getLogger("celo_service")
 stellar_logger = logging.getLogger("stellar_service")
 bantu_logger = logging.getLogger("bantu_service")
 
 # Dynamically set logging levels
-selected_service = os.getenv("SERVICE", "bantu").lower()  # Default to "all"
+selected_service = os.getenv("SERVICE", "bsc").lower()
 
 if selected_service == "tron":
     tron_logger.setLevel(logging.DEBUG)
@@ -45,11 +46,10 @@ elif selected_service == "stellar":
     tron_logger.setLevel(logging.ERROR)
     celo_logger.setLevel(logging.ERROR)
     stellar_logger.setLevel(logging.DEBUG)
-else:  # If "all", log everything at INFO level
+else:  # Default to INFO level
     tron_logger.setLevel(logging.INFO)
     celo_logger.setLevel(logging.INFO)
     stellar_logger.setLevel(logging.INFO)
-
 
 def start_app():
     print(":::::::: Starting the MUDA LIQUIDITY RAIL :::::::::::::")
@@ -83,7 +83,11 @@ def start_app():
 
         if arg_2 == "service":
             print("Starting service in provider mode")
-            asyncio.run(run_services())
+            try:
+                asyncio.get_running_loop()  # If an event loop is running, use `create_task`
+                asyncio.create_task(run_services())
+            except RuntimeError:
+                asyncio.run(run_services())  # If no event loop is running, start one
         elif arg_2 == "client":
             print("Starting service in client mode")
             print(f"App started on port {os.environ.get('PORT')}")
@@ -100,29 +104,35 @@ def start_app():
         print(e)
         sys.exit()
 
-
 async def run_services():
-    # Gather services dynamically based on the selected service
     services = []
 
-    if selected_service in ("all", "tron"):
-        tron_logger.info("Starting Tron Service")
-        services.append(asyncio.to_thread(tron))
-    if selected_service in ("all", "celo"):
-        celo_logger.info("Starting Celo Service")
-        services.append(asyncio.to_thread(CELOCronService.main))
-    if selected_service in ("all", "stellar"):
-        stellar_logger.info("Starting Stellar Service")
-        services.append(asyncio.to_thread(xlm_main))
-    if selected_service in ("all", "bsc"):
-        services.append(asyncio.to_thread(bsc))
-    if selected_service in ("all", "bantu"):
-        services.append(asyncio.to_thread(bantu))
+    if os.getenv("SERVICE", "all").lower() in ("all", "stellar"):
+        logger.info("Starting Stellar Service")
+        services.append(asyncio.create_task(xlm_main()))
+
+    if os.getenv("SERVICE", "all").lower() in ("all", "bsc"):
+        logger.info("Starting BSC Service")
+        services.append(asyncio.create_task(bsc()))
+
+    if os.getenv("SERVICE", "all").lower() in ("all", "celo"):
+        logger.info("Starting Celo Service")
+        services.append(asyncio.create_task(CELOCronService.main()))
+
+    if os.getenv("SERVICE", "all").lower() in ("all", "tron"):
+        logger.info("Starting Tron Service")
+        services.append(asyncio.create_task(tron()))
+
+    if os.getenv("SERVICE", "all").lower() in ("all", "bantu"):
+        logger.info("Starting Bantu Service")
+        services.append(asyncio.create_task(bantu()))
+
     if not services:
         logger.warning("No valid services selected to run. Exiting.")
         return
 
-    await asyncio.gather(*services)
-
+    logger.info("🚀 Running all selected services now")
+    await asyncio.gather(*services) 
+    
 if __name__ == "__main__":
     start_app()

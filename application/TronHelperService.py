@@ -162,7 +162,7 @@ def process_received_data(transaction_hash, from_address, to_address, asset_amou
             asset_amount,
             currency["code"],
             currency["contract_address"],
-            "tron",
+            "TRON",""
         )
 
         return True
@@ -215,29 +215,16 @@ async def log_loop(poll_interval, currency):
             tron_logger.error("An error occurred: %s", e)
             traceback.print_exc()
 
-def main():
+async def main():
     tron_logger.info("Starting ingestion for the TRON network")
     currency = {
         "name": "TRX/USDT",
         "contract_address": usdt_contract_address,
-        "decimals": 6,  # USDT has 6 decimals on TRON
+        "decimals": 6,  
         "code": "USDT",
         "issuer": "TRON"
     }
 
-    tasks = [log_loop(2, currency)]  # Set poll_interval to 2 seconds
+    tasks = [log_loop(2, currency)]
+    await asyncio.gather(*tasks)
 
-    # Check if an event loop is already running
-    try:
-        loop = asyncio.get_running_loop()
-        # If a loop is already running, add tasks to it
-        for task in tasks:
-            asyncio.ensure_future(task)
-    except RuntimeError:
-        # No loop is running; create a new one
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(asyncio.gather(*tasks))
-
-if __name__ == "__main__":
-    main()

@@ -16,7 +16,6 @@ class EVMConnector:
         self.chain_id = 44787
         self.gas = 70000
         self.web3 = Web3(Web3.HTTPProvider(self.rpc_url))
-
        
     def to_wei(self, amount):
         return amount * self.precision
