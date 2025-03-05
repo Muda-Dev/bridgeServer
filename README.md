@@ -1,79 +1,103 @@
 # Rail Bridge Server
 
-description: |
-  The Rail Bridge Server is an automated liqudity management system that enables fiat providers to listen for blockchain transactions and execute payouts 
-  when payments are received. Providers run the Rail server to monitor blockchain 
-  activity, and when a transaction reaches their address, they confirm it and process 
-  a fiat payout.
+  The Rail Bridge Server is a a system that allows liqudity rail providers to listen for blockchain transactions and execute payouts when payments are received. Providers run the Rail server to monitor blockchain activity, and when a transaction reaches their address, they confirm it and process a fiat payout.
 
-  The system operates on multiple networks and supports various assets, making it a 
-  robust decentralized financial infrastructure for automated cross-chain payouts.
+  The system operates on multiple networks and supports various assets, making it a robust decentralized financial infrastructure for automated cross-chain payouts.
 
-supported_blockchains:
-  - name: Stellar
-    assets: ["USDC", "CNGN"]
-    url: "https://stellar.org/"
-  - name: Celo
-    assets: ["CUSD"]
-    url: "https://celo.org/"
-  - name: Tron
-    assets: ["USDT"]
-    url: "https://tron.network/"
-  - name: Binance Smart Chain (BSC)
-    assets: ["CNGN"]
-    url: "https://bscscan.com/"
-  - name: Bantu Blockchain
-    assets: ["CNGN"]
-    url: "https://bantublockchain.org/"
+  ## Supported Blockchains & Assets
+  The system operates on the following blockchain networks:
 
-demo_url: "https://liqudityrail.com"
-api_docs: "https://docs.liqudityrail.com"
+  1. [Stellar](https://stellar.org/) - USDC, CNGN
+  2. [Celo](https://celo.org/) - CUSD
+  3. [Tron](https://tron.network/) - USDT
+  4. [Binance Smart Chain (BSC)](https://bscscan.com/) - CNGN
+  5. [Bantu Blockchain](https://bantublockchain.org/) - CNGN
 
-providers:
-  registration: "https://liquidityrail.com/register"
-  docker_image: "embonye/muda:latest"
+  You can configure the default blockchain in the `.env` file or set it to `0` to support all chains.
 
-docker_commands:
-  pull: "docker pull embonye/muda:latest"
-  run_provider: >
-    docker run -d -p 8030:8000 --env-file /home/ec2-user/apps/config/rail.env 
-    --name muda-container embonye/muda:latest provider service
-  migrate_db: >
-    docker run --env-file /home/ec2-user/apps/config/rail.env 
-    embonye/muda:latest --migrate-db
+  ## Demo
+  You can see a working demo at:
+  [Liquidity Rail Demo](https://liqudityrail.com)
 
-configuration:
-  general:
-    DEBUG: true
-    PORT: 8001
-    address: "<BLOCKCHAIN_ADDRESS>"
-    callback_url: "<CALLBACK_URL>"
-    webhook_url: "<WEBHOOK_URL>"
-    currency: "UGX"
-    default_chain: "STELLAR, CELO, TRON, BSC, BANTU"
+  ## API Documentation
+  For full API details, please check:
+  [Liquidity Rail API Docs](https://docs.liqudityrail.com)
 
-  database:
-    HOST_NAME: "localhost"
-    USER_NAME: "root"
-    PASSWORD: "root"
-    DBNAME: "liqudity_rail_server"
+  # Providers
 
-  provider_settings:
-    mode: "dev"
-    enc_key: "<ENCRYPTION_KEY>"
-    RATE_ENDPOINT: "<RATE_EXCHANGE_URL>"
-    PAYOUT_URL: "<PAYOUT_REQUEST_URL>"
-    PROVIDER_NAME: "<PROVIDER_NAME>"
-    PROVIDER_ID: "<PROVIDER_ID>"
-    PAY_CURRENCY: "UGX"
+  ## Becoming a Provider
+  Before running the server as a provider, you need to create an account at:
 
-  supported_assets: ["USDT", "USDC", "CNGN"]
+  [Liquidity Rail Registration](https://liquidityrail.com/register)
 
-clients:
-  run_command: "python run.py provider client"
-  responsibility: |
-    Clients are responsible for entering their private keys for transactions. 
-    The provider mode does not require private keys, as it only listens for incoming 
-    transactions and processes payouts using configured endpoints.
+  During registration, choose the option to become a provider.
 
-api_reference: "https://docs.liqudityrail.com"
+  ## Downloading and Running the Server
+
+  The Rail Bridge Server is available as a Docker image for easy deployment.
+
+  ### Pulling the Docker Image
+  To use the Rail Bridge Server as a provider, you need to pull the Docker image:
+  ```sh
+   docker pull embonye/muda:latest
+  ```
+
+  ### Running the Server
+  To run the server as a provider, use the following command:
+  ```sh
+  docker run -d -p 8030:8000 --env-file /home/ec2-user/apps/config/rail.env --name muda-container embonye/muda:latest
+  ```
+
+  ### Running Database Migrations
+  Before starting the server, migrate the database using:
+  ```sh
+  docker run --env-file /home/ec2-user/apps/config/rail.env embonye/muda:latest --migrate-db
+  ```
+
+  ### Running the Server as a Service Provider
+  ```sh
+  docker run -d -p 8030:8000 --env-file /home/ec2-user/apps/config/rail.env --name muda-container embonye/muda:latest provider service
+  ```
+
+  The server will start a blockchain listening service, which listens for events emitted by the contract. Once a new payment is received, a callback will be sent to the `callback_url`.
+
+  ## Configuration
+  The `.env` file must be present in the working directory and should contain the following values:
+
+  ### General Settings
+  - `DEBUG=True`
+  - `PORT=8001`
+  - `address` - The blockchain address that will be receiving payments.
+  - `callback_url` - URL that will be called when a new payment has been received.
+  - `webhook_url` - URL that will receive payment notifications once a transaction is completed.
+  - `currency` - The default currency for payouts (e.g., UGX, USD, EUR, etc.).
+  - `default_chain` - The blockchain used for transactions (CELO, STELLAR, TRON, BSC, BANTU, etc.).
+
+  ### Database Configuration
+  - `database`
+    - `HOST_NAME=localhost`
+    - `USER_NAME=root`
+    - `PASSWORD=root`
+    - `DBNAME=liqudity_rail_server`
+
+  ### Provider-Specific Settings
+  - `mode=dev`
+  - `enc_key` - Encryption key used to sign callbacks.
+  - `RATE_ENDPOINT` - Exchange rate endpoint for providers.
+  - `PAYOUT_URL` - URL where fiat payouts are requested.
+  - `PROVIDER_NAME` - Name of the provider.
+  - `PROVIDER_ID` - Unique identifier for the provider.
+  - `PAY_CURRENCY` - The currency for payouts.
+
+  ### Supported Assets
+  - `SUPPORTED_ASSETS=["USDT", "USDC", "CNGN"]`
+
+  # Clients
+  Clients use this service by running:
+  ```sh
+  python run.py provider client
+  ```
+  Clients are responsible for entering their private keys for transactions. The provider mode does not require private keys, as it only listens for incoming transactions and processes payouts using configured endpoints.
+
+  Full API documentation is available:
+  [here](https://docs.liqudityrail.com)
