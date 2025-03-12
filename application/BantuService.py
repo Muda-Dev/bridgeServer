@@ -6,13 +6,13 @@ from dotenv import load_dotenv
 import threading
 from helpers.dbhelper import Database as Db
 from helpers.modal import Modal as md
+import asyncio
 import logging
 
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 stellar_logger = logging.getLogger(__name__)
-
 # Initialize the server
 server = Server("https://expansion.bantu.network")
 
@@ -71,8 +71,8 @@ def process_operations(transaction):
                 if (
                     asset_code == "USDC"
                     and asset_issuer == os.getenv("USDC_ISSUER")
-                    or asset_code == "cUGX"
-                    and asset_issuer == os.getenv("CUGX_ISSUER")
+                    or asset_code == "CNGN"
+                    and asset_issuer == os.getenv("CNGN_ISSUER")
                 ):
                     return {
                         "asset": asset_code,
@@ -95,20 +95,20 @@ def on_transaction_received(transaction):
         from_account = single_op['from']
         to_account = single_op['to']
         asset_code = single_op['asset']
-        memo = transaction['memo']
+        memo = transaction.get('memo', "")
         
-        md.payout_callback(id, to_account, from_account, asset_amount, asset_code, asset_issuer, "BANTU",memo
+        md.payout_callback(id, to_account, from_account, asset_amount, asset_code, asset_issuer, "bantu",memo
         )
         # Additional processing can be added here
 
 
 async def main():
-    account_id = os.getenv("STELLAR_ACCOUNT_ID")
+    account_id = os.getenv("BANTU_ACCOUNT_ID")
     if not account_id:
-        stellar_logger.error("Please set the 'STELLAR_ACCOUNT_ID' environment variable.")
+        stellar_logger.error("Please set the 'BANTU_ACCOUNT_ID' environment variable."+account_id)
         return
 
-    stellar_logger.info("Starting Stellar transaction listener asynchronously")
+    stellar_logger.info("Starting bantu transaction listener asynchronously")
     
     # Ensure listen_for_transactions is async, otherwise run in a separate thread
     await asyncio.to_thread(listen_for_transactions, account_id)

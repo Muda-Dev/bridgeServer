@@ -32,7 +32,7 @@ stellar_logger = logging.getLogger("stellar_service")
 bantu_logger = logging.getLogger("bantu_service")
 
 # Dynamically set logging levels
-selected_service = os.getenv("SERVICE", "all").lower()
+selected_service = os.getenv("SERVICE", "bantu").lower()
 
 if selected_service == "tron":
     tron_logger.setLevel(logging.DEBUG)
