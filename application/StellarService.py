@@ -6,9 +6,13 @@ from dotenv import load_dotenv
 import threading
 from helpers.dbhelper import Database as Db
 from helpers.modal import Modal as md
+import asyncio
+import logging
+
 
 load_dotenv()
-
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+stellar_logger = logging.getLogger(__name__)
 # Initialize the server
 server = Server("https://horizon.stellar.org")
 
@@ -59,14 +63,11 @@ def process_operations(transaction):
         if op["type"] == "payment":
             # Check the asset type
             asset_type = op.get("asset_type")
-            print("received asset type ==>", op["asset_type"])
-            if asset_type == "native":
-                return {"asset": "XLM", "issuer": "", "amount": op.get("amount")}
-            elif asset_type in ("credit_alphanum4", "credit_alphanum12"):
+            if asset_type in ("credit_alphanum4", "credit_alphanum12"):
                 asset_code = op.get("asset_code")
                 asset_issuer = op.get("asset_issuer")
                 # Check for specified assets by code and issuer
-                print("received asset ==>", asset_code, asset_issuer)
+                print("received asset operation ==>", op)
                 if (
                     asset_code == "USDC"
                     and asset_issuer == os.getenv("USDC_ISSUER")
@@ -75,6 +76,8 @@ def process_operations(transaction):
                 ):
                     return {
                         "asset": asset_code,
+                        "from":op.get("from"),
+                        "to":op.get("to"),
                         "issuer": asset_issuer,
                         "amount": op.get("amount"),
                     }
@@ -87,33 +90,25 @@ def on_transaction_received(transaction):
     if single_op !=False:
         print(f"Transaction {transaction['id']} involves XLM, USDC, or cUGX.")
         id = transaction["id"]
-        account = ""
-        service_id = ""
         asset_amount = single_op['amount']
         asset_issuer = single_op['issuer']
+        from_account = single_op['from']
+        to_account = single_op['to']
         asset_code = single_op['asset']
         memo = transaction['memo']
         
-        md.payout_callback(id, account, memo, asset_amount, asset_code, asset_issuer, "XLM"
+        md.payout_callback(id, to_account, from_account, asset_amount, asset_code, asset_issuer, "STELLAR",memo
         )
         # Additional processing can be added here
 
 
-def main():
+async def main():
     account_id = os.getenv("STELLAR_ACCOUNT_ID")
     if not account_id:
-        print("Please set the 'STELLAR_ACCOUNT_ID' environment variable.")
+        stellar_logger.error("Please set the 'STELLAR_ACCOUNT_ID' environment variable.")
         return
 
-    # Run the listener in a background thread
-    thread = threading.Thread(target=listen_for_transactions, args=(account_id,))
-    thread.start()
-    print("Transaction listener started in the background.")
-
-    # Your main application code continues here
-    # ...
-    # To wait for the thread to finish (if needed), you can call: thread.join()
-
-
-if __name__ == "__main__":
-    main()
+    stellar_logger.info("Starting Stellar transaction listener asynchronously")
+    
+    # Ensure listen_for_transactions is async, otherwise run in a separate thread
+    await asyncio.to_thread(listen_for_transactions, account_id)

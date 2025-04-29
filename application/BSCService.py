@@ -135,7 +135,7 @@ def process_received_data(args, amount, token, transaction_hash):
             asset_amount,
             token["code"],
             token["contract_address"],
-            "bsc",
+            "BSC",""
         )
         return True
     except Exception as e:
@@ -198,17 +198,11 @@ async def log_loop(poll_interval, token):
             bsc_logger.error("An error occurred: %s", e)
             traceback.print_exc()
 
-def main():
+async def main():
     bsc_logger.info("Starting ingestion for the BSC contract")
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+
+    ssl._create_default_https_context = ssl._create_unverified_context
 
     # Create log loops for each supported token
     tasks = [log_loop(1, token) for token in supported_tokens]
-
-    loop.run_until_complete(asyncio.gather(*tasks))
-    loop.close()
-
-if __name__ == "__main__":
-    ssl._create_default_https_context = ssl._create_unverified_context
-    main()
+    await asyncio.gather(*tasks)
